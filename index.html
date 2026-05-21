@@ -325,6 +325,9 @@
   }
 
   .alsh-logo-title {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.45rem;
    width: min(100%, 360px);
    overflow: visible;
    line-height: 1.2;
@@ -336,6 +339,21 @@
   }
   .alsh-logo-title .alsh-shell-line {
    display: block;
+  }
+  .sidebar-beta-badge {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0.12rem 0.5rem;
+   border-radius: 999px;
+   background: #7e22ce;
+   color: #fff;
+   font-size: 0.65rem;
+   font-weight: 700;
+   letter-spacing: 0.05em;
+   text-transform: uppercase;
+   line-height: 1;
+   flex-shrink: 0;
   }
   .site-footer {
    text-align: center;
@@ -351,7 +369,7 @@
   <a class="section-link section-link-with-thumb alsh-feature-card" href="alfmir.ai.html" target="_blank" rel="noopener">
    <img class="section-thumb alsh-thumb" src="images/alfe/1.png" alt="Alfmir.ai interface preview">
    <div class="section-body">
-    <h1 class="alsh-logo-title">Alfmir.ai</h1>
+    <h1 class="alsh-logo-title">Alfmir.ai <span class="sidebar-beta-badge">Beta</span></h1>
     <h2 class="section-subtitle">Agentic Software Development</h2>
     <p>AI code agent for full-project workflows.</p>
     <p>Free, Libre, Open-Source, MIT License</p>
