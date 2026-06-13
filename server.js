@@ -78,7 +78,7 @@ const SHARED_HEADER_TEMPLATE = `
     <h1><a class="site-title-link" href="/">Lochner Technology</a></h1>
     <p>Lochner Technology builds developer software and AI-assisted workflow tools.</p>
     <div class="cta-buttons">
-      <a class="cta-button" href="https://www.linkedin.com/in/nicholaslochner/" target="_blank" rel="noopener" title="Open LinkedIn profile">
+      <a class="cta-button" href="https://www.linkedin.com/in/nicholelochner/" target="_blank" rel="noopener" title="Open LinkedIn profile">
         LinkedIn
       </a>
       <a class="cta-button" href="https://github.com/lochner-lw" target="_blank" rel="noopener" title="Open GitHub profile">
@@ -91,9 +91,6 @@ const SHARED_HEADER_TEMPLATE = `
       </a>
       <a class="cta-button" href="https://www.npmjs.com/~lochner-lw" target="_blank" rel="noopener" title="Open npm profile">
         NPM
-      </a>
-      <a class="cta-button" href="https://freelancer.com/hireme/nlochner" target="_blank" rel="noopener" title="Open Freelancer profile">
-        Freelancer
       </a>
     </div>
     <p class="banner-email"><a href="mailto:engineering@lochner.tech">engineering@lochner.tech</a></p>
