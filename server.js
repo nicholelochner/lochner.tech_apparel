@@ -81,6 +81,9 @@ const SHARED_HEADER_TEMPLATE = `
       <a class="cta-button" href="https://www.linkedin.com/in/nicholelochner/" target="_blank" rel="noopener" title="Open LinkedIn profile">
         LinkedIn
       </a>
+      <a class="cta-button" href="https://www.freelancer.com/u/nlochner" target="_blank" rel="noopener" title="Open Freelancer.com profile">
+        Freelancer.com
+      </a>
       <a class="cta-button" href="https://github.com/nicholelochner" target="_blank" rel="noopener" title="Open GitHub profile">
         GitHub
         <span class="cta-button-icon" aria-hidden="true">
