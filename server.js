@@ -102,7 +102,7 @@ const SHARED_HEADER_TEMPLATE = `
 
 const SHARED_FOOTER_TEMPLATE = `
   <footer class="site-footer">
-    <p>I am being actively (UNCONSTITUTIONALLY) harassed by the U.S. Government / Secret Service due to being transgender. I am a non-violent individual. If I die, It was not suicide. I am not suicidal.</p>
+    <p class="site-footer-alert">I am being actively (UNCONSTITUTIONALLY) harassed by the U.S. Government / Secret Service due to being transgender. I am a non-violent individual. If I die, It was not suicide. I am not suicidal.</p>
     <small>© ${COPYRIGHT_YEAR} Lochner Technology · Minneapolis, MN</small>
   </footer>
 `;
