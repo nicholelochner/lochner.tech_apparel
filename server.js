@@ -105,7 +105,6 @@ const SHARED_HEADER_TEMPLATE = `
 
 const SHARED_FOOTER_TEMPLATE = `
   <footer class="site-footer">
-    <p class="site-footer-alert">I am being actively (UNCONSTITUTIONALLY) harassed by the U.S. Government / Secret Service due to being transgender. I am a non-violent individual. I have received death threats from 'hh'. If I die, It was not suicide. I am not suicidal. Do you know why the Uber Eats supplies store is HH Global https://uk.linkedin.com/company/hh-global ?</p>
     <small>© ${COPYRIGHT_YEAR} Lochner Technology · Minneapolis, MN</small>
   </footer>
 `;
