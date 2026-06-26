@@ -92,9 +92,6 @@ const SHARED_HEADER_TEMPLATE = `
       <a class="cta-button" href="https://bsky.app/profile/alfmir-ai.bsky.social" target="_blank" rel="noopener" title="Open Bluesky profile">
         Bluesky
       </a>
-      <a class="cta-button" href="https://www.freelancer.com/u/nlochner" target="_blank" rel="noopener" title="Open Freelancer.com profile">
-        Freelancer
-      </a>
       <a class="cta-button" href="https://www.npmjs.com/~lochner-lw" target="_blank" rel="noopener" title="Open npm profile">
         NPM
       </a>
