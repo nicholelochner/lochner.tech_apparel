@@ -33,7 +33,7 @@ The server will:
 IPFS gateways commonly serve sites from a path like `/ipfs/<CID>/`, so absolute site-root URLs such as `/assets/...` can point at the gateway root instead of this site. Generate an IPFS-ready bundle before publishing:
 
 ```bash
-npm run build:ipfs
+npm run export:ipfs
 ```
 
 The command writes a self-contained `dist-ipfs/` directory that:
@@ -42,10 +42,26 @@ The command writes a self-contained `dist-ipfs/` directory that:
 - Rewrites root-relative local asset references to relative paths for gateway compatibility
 - Adds `lochner-apparel/index.html` so the `/lochner-apparel` route alias also works as a directory-style IPFS path
 
-Publish the generated directory with your IPFS client or pinning service. For example:
+Publish the generated directory with your IPFS client or pinning service, or use one of the included helper scripts.
+
+For a first publish, run:
 
 ```bash
-ipfs add -r dist-ipfs
+npm run ipfs:publish
 ```
 
-Then open the resulting root CID through your preferred IPFS gateway.
+That script builds `dist-ipfs/`, adds it to IPFS with CIDv1, pins the CID, creates the `lochner-tech` IPNS key if needed, and publishes the CID to that IPNS name.
+
+For production updates after the key already exists, run:
+
+```bash
+npm run ipfs:update
+```
+
+The update script refuses to create a new key. To guard against publishing with the wrong local key, set `LOCHNER_EXPECTED_IPNS_ID` to the production IPNS ID before running it:
+
+```bash
+LOCHNER_EXPECTED_IPNS_ID=<production-ipns-id> npm run ipfs:update
+```
+
+Both scripts support `LOCHNER_IPNS_KEY_NAME` to override the default `lochner-tech` key name. They also support `IPFS_BIN`, `IPFS_HOME`, and `IPFS_PATH` for Kubo/IPFS installations that are not on `PATH`.
