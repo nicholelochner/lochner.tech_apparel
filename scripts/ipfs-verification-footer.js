@@ -169,17 +169,17 @@ function createSharedFooterTemplate(copyrightYear) {
       }
 
       .ipfs-footer-verification:not([open]) .ipfs-footer-shield {
-        width: 1.5rem;
-        height: 1.5rem;
-        font-size: 1.25rem;
+        width: 1.8rem;
+        height: 1.8rem;
+        font-size: 1.65rem;
       }
 
       .ipfs-footer-shield-mark {
         position: absolute;
         display: inline-grid;
         place-items: center;
-        width: 1.08rem;
-        height: 1.08rem;
+        width: 0.96rem;
+        height: 0.96rem;
         border-radius: 999px;
         color: #0f172a;
         font-size: 0.74rem;
