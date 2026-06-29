@@ -234,14 +234,17 @@ function createSharedFooterTemplate(copyrightYear) {
         function resolveCurrentManifestUrl() {
           const path = window.location.pathname;
           const ipnsPrefix = '/ipns/' + TEST_DOMAIN + '/';
-          const ipfsMatch = path.match(/^(\/ipfs\/[^/]+\/)/);
+          const ipfsPathParts = path.split('/');
+          const ipfsPrefix = ipfsPathParts[1] === 'ipfs' && ipfsPathParts[2]
+            ? '/ipfs/' + ipfsPathParts[2] + '/'
+            : null;
 
           if (path === ipnsPrefix.slice(0, -1) || path.startsWith(ipnsPrefix)) {
             return window.location.origin + ipnsPrefix + MANIFEST_PATH;
           }
 
-          if (ipfsMatch) {
-            return window.location.origin + ipfsMatch[1] + MANIFEST_PATH;
+          if (ipfsPrefix) {
+            return window.location.origin + ipfsPrefix + MANIFEST_PATH;
           }
 
           return window.location.origin + '/' + MANIFEST_PATH;
