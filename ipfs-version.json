@@ -3,22 +3,22 @@
   "project": "lochner.tech",
   "domainName": "lochner.tech",
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
-  "verificationTarget": "alfmir.ai frontend IPFS publication flow",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "e1526ace8cca50b32eb01212a49d402cc2fce087",
+  "gitRevision": "6b69fcbbbf8cb94430e22dd19e808d5e853c67a7",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/e1526ace8cca50b32eb01212a49d402cc2fce087",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/e1526ace8cca50b32eb01212a49d402cc2fce087",
-  "contentSha256": "bba45b4d779f07fd5adb3179bd2470247c0a5d827ca03d75a249e36466b09892",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/6b69fcbbbf8cb94430e22dd19e808d5e853c67a7",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/6b69fcbbbf8cb94430e22dd19e808d5e853c67a7",
+  "contentSha256": "15fffe0696c362df936d79c7d1eed6cb88ac8d9746fcf89025eaa2dfa2b8bddb",
   "previousContentSha256": [
     "72452d30c967da5ed4c95414d58cb7e775d1f742fdf56faf12927ab3d179814f",
     "7c793dc148ab6249e7f88ef564cbdac59266fb4cf582de2bd131901b77697710",
     "af6bef4c2076c2012da0e88435f07197981c0d972b06baa3ca8f7c3548f0e292",
     "1b359bc240a0d8b81130949469e9123aabcfa4cace4fc977278df4d3e844f3e3",
     "2f2374d5dc593afbce8098c6ee75c246bcd799b7b067a9726bf714c1a79721ea",
-    "97f22fa1f351e8b2536bc447cc781ef659c57e28b6b3668b4aeeb21616bbe45c"
+    "97f22fa1f351e8b2536bc447cc781ef659c57e28b6b3668b4aeeb21616bbe45c",
+    "bba45b4d779f07fd5adb3179bd2470247c0a5d827ca03d75a249e36466b09892"
   ],
   "files": [
     {
@@ -68,13 +68,13 @@
     },
     {
       "path": "scripts/ipfs-version-manifest.js",
-      "bytes": 4230,
-      "sha256": "0e12c21319c54ef63633d3312f47069cdff33e50b49a683d0b46bcb374d8aacf"
+      "bytes": 4162,
+      "sha256": "890044652de7b85730ed85c8747cc9da7cc3e323c22032c94bdef7a445919e1c"
     },
     {
       "path": "scripts/ipfs-verification-footer.js",
-      "bytes": 32960,
-      "sha256": "9818f3b54fae3e8dca6c8d9508f98bd8446006d51eca1cf900f91f8abf518815"
+      "bytes": 32961,
+      "sha256": "8268ad20a8b4290fb1a7db6eca16e4d51916a3c1db505acb44f6d478e8a4d692"
     },
     {
       "path": "assets/fonts/LochnerBrandSans-Bold.ttf",

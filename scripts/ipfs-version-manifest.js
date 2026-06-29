@@ -58,7 +58,6 @@ function createIpfsVersionManifest(rootDir) {
     project: DOMAIN_NAME,
     domainName: DOMAIN_NAME,
     ipnsId: IPNS_ID,
-    verificationTarget: 'alfmir.ai frontend IPFS publication flow',
     source: 'https://lochner.tech',
     manifestPath: MANIFEST_PATH,
     gitRevision,
