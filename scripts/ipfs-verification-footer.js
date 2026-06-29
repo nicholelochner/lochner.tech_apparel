@@ -1,5 +1,6 @@
 const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
 const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json';
+const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/lochner.tech_apparel/commits/main';
 const MANIFEST_PATH = 'ipfs-version.json';
 const TEST_DOMAIN = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
@@ -212,6 +213,7 @@ function createSharedFooterTemplate(copyrightYear) {
         const MANIFEST_PATH = '${MANIFEST_PATH}';
         const CURRENT_MANIFEST_URL = resolveCurrentManifestUrl();
         const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
+        const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
         const INBROWSER_IPNS_URL = '${INBROWSER_IPNS_URL}';
         const DWEB_IPNS_URL = '${DWEB_IPNS_URL}';
         const IPFS_GATEWAYS = [
@@ -258,9 +260,31 @@ function createSharedFooterTemplate(copyrightYear) {
           return revision ? revision.slice(0, 12) + '…' : 'unavailable';
         }
 
+        function logVerificationStep(step, details) {
+          if (details === undefined) {
+            console.info('[IPFS verification]', step);
+          } else {
+            console.info('[IPFS verification]', step, details);
+          }
+        }
+
+        function summarizeManifest(manifest) {
+          if (!manifest) {
+            return null;
+          }
+
+          return {
+            gitRevision: manifest.gitRevision || null,
+            gitRevisionDirty: Boolean(manifest.gitRevisionDirty),
+            contentSha256: manifest.contentSha256 || null,
+            gitCommitUrl: manifest.gitCommitUrl || null
+          };
+        }
+
         function setStatus(state, message) {
           statusEl.dataset.state = state;
           statusMessageEl.textContent = message;
+          logVerificationStep('status: ' + state, message);
         }
 
         function setGitRevision(manifest) {
@@ -280,7 +304,8 @@ function createSharedFooterTemplate(copyrightYear) {
           }
         }
 
-        function fetchJson(url, timeoutMs = 12000) {
+        function fetchJson(url, timeoutMs = 12000, label = 'JSON') {
+          logVerificationStep('fetch start: ' + label, { url, timeoutMs });
           const controller = new AbortController();
           const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
 
@@ -289,32 +314,53 @@ function createSharedFooterTemplate(copyrightYear) {
               if (!response.ok) {
                 throw new Error(response.status + ' ' + response.statusText);
               }
+              logVerificationStep('fetch response: ' + label, {
+                url,
+                status: response.status,
+                statusText: response.statusText
+              });
               return response.json();
             })
             .catch((error) => {
               if (error.name === 'AbortError') {
-                throw new Error('timed out after ' + Math.round(timeoutMs / 1000) + 's');
+                const timeoutError = new Error('timed out after ' + Math.round(timeoutMs / 1000) + 's');
+                logVerificationStep('fetch failed: ' + label, { url, error: timeoutError.message });
+                throw timeoutError;
               }
+              logVerificationStep('fetch failed: ' + label, { url, error: error.message });
               throw error;
             })
             .finally(() => window.clearTimeout(timeoutId));
         }
 
-        async function fetchFirstGatewayManifest() {
-          const errors = [];
+        async function fetchGatewayManifests() {
+          const results = await Promise.allSettled(IPFS_GATEWAYS.map(async (gatewayUrl) => ({
+            gatewayUrl,
+            manifest: await fetchJson(gatewayUrl + '?verify=' + Date.now(), 8000, 'public gateway manifest: ' + gatewayUrl)
+          })));
+          logVerificationStep('public gateway fetch settled', results.map((result, index) => ({
+            gatewayUrl: IPFS_GATEWAYS[index],
+            status: result.status,
+            error: result.status === 'rejected' && result.reason ? result.reason.message : null,
+            manifest: result.status === 'fulfilled' ? summarizeManifest(result.value.manifest) : null
+          })));
+          const fulfilled = results
+            .filter((result) => result.status === 'fulfilled')
+            .map((result) => result.value);
 
-          return new Promise((resolve, reject) => {
-            IPFS_GATEWAYS.forEach((gatewayUrl) => {
-              fetchJson(gatewayUrl + '?verify=' + Date.now(), 8000)
-                .then((manifest) => resolve({ gatewayUrl, manifest }))
-                .catch((error) => {
-                  errors.push(gatewayUrl + ': ' + error.message);
-                  if (errors.length === IPFS_GATEWAYS.length) {
-                    reject(new Error(errors.join('; ')));
-                  }
-                });
+          if (!fulfilled.length) {
+            const errors = results.map((result, index) => {
+              const reason = result.reason && result.reason.message ? result.reason.message : 'unknown error';
+              return IPFS_GATEWAYS[index] + ': ' + reason;
             });
-          });
+            throw new Error(errors.join('; '));
+          }
+
+          return {
+            fulfilled,
+            failedCount: results.length - fulfilled.length,
+            totalCount: results.length
+          };
         }
 
         function setDetail(el, value, title) {
@@ -322,7 +368,31 @@ function createSharedFooterTemplate(copyrightYear) {
           el.title = title || '';
         }
 
+        async function fetchGithubMainCommit() {
+          const commit = await fetchJson(GITHUB_MAIN_COMMIT_API_URL + '?verify=' + Date.now(), 8000, 'GitHub main commit API');
+
+          if (!commit || typeof commit.sha !== 'string' || !commit.sha) {
+            throw new Error('GitHub main commit response did not include a commit SHA');
+          }
+
+          const summarizedCommit = {
+            sha: commit.sha,
+            parentShas: Array.isArray(commit.parents)
+              ? commit.parents.map((parent) => parent && parent.sha).filter(Boolean)
+              : []
+          };
+          logVerificationStep('GitHub main commit parsed', summarizedCommit);
+          return summarizedCommit;
+        }
+
         async function runVerification() {
+          console.group('[IPFS verification] run');
+          logVerificationStep('configuration', {
+            currentManifestUrl: CURRENT_MANIFEST_URL,
+            githubRawManifestUrl: GITHUB_RAW_MANIFEST_URL,
+            githubMainCommitApiUrl: GITHUB_MAIN_COMMIT_API_URL,
+            publicGatewayManifestUrls: IPFS_GATEWAYS
+          });
           setStatus('loading', 'Checking lochner.tech publication…');
           gitRevisionEl.textContent = 'checking…';
           originHashEl.textContent = 'checking…';
@@ -331,41 +401,81 @@ function createSharedFooterTemplate(copyrightYear) {
           recheckButton.disabled = true;
 
           try {
-            const originManifest = await fetchJson(CURRENT_MANIFEST_URL + '?verify=' + Date.now(), 8000);
+            const originManifest = await fetchJson(CURRENT_MANIFEST_URL + '?verify=' + Date.now(), 8000, 'current site manifest');
+            logVerificationStep('current site manifest parsed', summarizeManifest(originManifest));
             setDetail(originHashEl, shortHash(originManifest.contentSha256), originManifest.contentSha256);
             setGitRevision(originManifest);
             manifestLinkEl.href = CURRENT_MANIFEST_URL;
             setStatus('loading', 'Loaded current site manifest; checking GitHub and IPFS…');
 
-            const [githubManifest, gatewayResult] = await Promise.all([
-              fetchJson(GITHUB_RAW_MANIFEST_URL + '?verify=' + Date.now(), 8000),
-              fetchFirstGatewayManifest()
+            const [githubManifest, gatewayResult, githubMainCommit] = await Promise.all([
+              fetchJson(GITHUB_RAW_MANIFEST_URL + '?verify=' + Date.now(), 8000, 'GitHub raw manifest'),
+              fetchGatewayManifests(),
+              fetchGithubMainCommit()
             ]);
 
+            logVerificationStep('GitHub raw manifest parsed', summarizeManifest(githubManifest));
             setDetail(githubHashEl, shortHash(githubManifest.contentSha256), githubManifest.contentSha256);
 
-            const gatewayManifest = gatewayResult.manifest;
-            setDetail(gatewayHashEl, shortHash(gatewayManifest.contentSha256), gatewayManifest.contentSha256);
-            gatewayLinkEl.href = gatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
+            const gatewayResults = gatewayResult.fulfilled;
+            const matchingGatewayResults = gatewayResults.filter((result) =>
+              result.manifest.contentSha256 === originManifest.contentSha256 &&
+              result.manifest.gitRevision === originManifest.gitRevision
+            );
+            const primaryGatewayResult = matchingGatewayResults[0] || gatewayResults[0];
+            const gatewayManifest = primaryGatewayResult.manifest;
+            const allGatewayManifestsMatch = matchingGatewayResults.length === gatewayResult.totalCount &&
+              gatewayResult.failedCount === 0;
+            const gatewaySummary = matchingGatewayResults.length + '/' + gatewayResult.totalCount + ' gateways match';
+            setDetail(gatewayHashEl, gatewaySummary + ' · ' + shortHash(gatewayManifest.contentSha256), gatewayResults.map((result) =>
+              result.gatewayUrl + ' — ' + (result.manifest.gitRevision || 'no revision') + ' — ' + (result.manifest.contentSha256 || 'no content hash')
+            ).join('\n'));
+            gatewayLinkEl.href = primaryGatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
 
-            const sameContent = originManifest.contentSha256 === gatewayManifest.contentSha256 &&
-              originManifest.contentSha256 === githubManifest.contentSha256;
-            const sameRevision = originManifest.gitRevision === gatewayManifest.gitRevision &&
-              originManifest.gitRevision === githubManifest.gitRevision;
+            const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
+              gatewayResults.every((result) => result.manifest.contentSha256 === originManifest.contentSha256);
+            const sameRevision = originManifest.gitRevision === githubManifest.gitRevision &&
+              gatewayResults.every((result) => result.manifest.gitRevision === originManifest.gitRevision);
+            const githubMainAcceptableRevisions = [githubMainCommit.sha].concat(githubMainCommit.parentShas);
+            const manifestRevisionIsCurrentGithubPublication =
+              githubMainAcceptableRevisions.includes(githubManifest.gitRevision) &&
+              githubMainAcceptableRevisions.includes(originManifest.gitRevision) &&
+              gatewayResults.every((result) => githubMainAcceptableRevisions.includes(result.manifest.gitRevision));
+            const anyDirtyManifest = originManifest.gitRevisionDirty || githubManifest.gitRevisionDirty ||
+              gatewayResults.some((result) => result.manifest.gitRevisionDirty);
 
-            if (originManifest.gitRevisionDirty || gatewayManifest.gitRevisionDirty || githubManifest.gitRevisionDirty) {
+            logVerificationStep('comparison results', {
+              sameContent,
+              sameRevision,
+              allGatewayManifestsMatch,
+              manifestRevisionIsCurrentGithubPublication,
+              anyDirtyManifest,
+              matchingGatewayCount: matchingGatewayResults.length,
+              checkedGatewayCount: gatewayResult.totalCount,
+              failedGatewayCount: gatewayResult.failedCount,
+              acceptableGithubRevisions: githubMainAcceptableRevisions
+            });
+
+            if (anyDirtyManifest) {
               setStatus('warning', 'Uncommitted changes reported; GitHub cannot fully verify this build.');
+            } else if (!allGatewayManifestsMatch) {
+              setStatus('warning', 'Mismatch: not every checked public IPFS gateway is serving the same manifest as this site.');
+            } else if (!manifestRevisionIsCurrentGithubPublication) {
+              setStatus('warning', 'Mismatch: manifests do not point at the current GitHub main commit or its direct parent manifest revision.');
             } else if (sameContent && sameRevision) {
-              setStatus('verified', 'Verified: current site, public IPFS gateways, and GitHub raw manifest match the same Git revision.');
+              setStatus('verified', 'Verified: current site, public IPFS gateways, GitHub raw manifest, and the current GitHub publication revision match.');
             } else if (!sameRevision) {
               setStatus('warning', 'Mismatch: current site, public IPFS gateways, or GitHub raw manifest point at different Git revisions.');
             } else {
               setStatus('warning', 'Mismatch: current site, public IPFS gateways, or GitHub raw manifest have different content hashes.');
             }
           } catch (error) {
+            logVerificationStep('verification threw', { error: error.message });
             setStatus('error', 'Unable to verify publication: ' + error.message);
           } finally {
             recheckButton.disabled = false;
+            logVerificationStep('run complete');
+            console.groupEnd();
           }
         }
 
