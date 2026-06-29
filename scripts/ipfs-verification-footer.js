@@ -429,7 +429,7 @@ function createSharedFooterTemplate(copyrightYear) {
             const gatewaySummary = matchingGatewayResults.length + '/' + gatewayResult.totalCount + ' gateways match';
             setDetail(gatewayHashEl, gatewaySummary + ' · ' + shortHash(gatewayManifest.contentSha256), gatewayResults.map((result) =>
               result.gatewayUrl + ' — ' + (result.manifest.gitRevision || 'no revision') + ' — ' + (result.manifest.contentSha256 || 'no content hash')
-            ).join('\n'));
+            ).join('\\n'));
             gatewayLinkEl.href = primaryGatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
 
             const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
