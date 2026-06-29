@@ -28,8 +28,12 @@ const CONTENT_PATHS = [
 ];
 
 function createIpfsVersionManifest(rootDir, options = {}) {
-  const gitRevision = resolveGitRevision(rootDir);
-  const gitRevisionDirty = resolveGitRevisionDirty(rootDir);
+  const gitRevision = Object.prototype.hasOwnProperty.call(options, 'gitRevision')
+    ? options.gitRevision
+    : resolveGitRevision(rootDir);
+  const gitRevisionDirty = Object.prototype.hasOwnProperty.call(options, 'gitRevisionDirty')
+    ? options.gitRevisionDirty
+    : resolveGitRevisionDirty(rootDir);
   const readFile = typeof options.readFile === 'function'
     ? options.readFile
     : (relativePath) => fs.readFileSync(path.join(rootDir, relativePath));
