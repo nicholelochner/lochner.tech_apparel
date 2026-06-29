@@ -621,6 +621,14 @@ function createSharedFooterTemplate(copyrightYear) {
           return revision ? revision.slice(0, 12) + '…' : 'unavailable';
         }
 
+        function formatRevision(revision) {
+          return revision || 'unavailable';
+        }
+
+        function formatRevisionList(revisions) {
+          return revisions.length ? revisions.map(formatRevision).join(', ') : 'none';
+        }
+
         function logVerificationStep(step, details) {
           if (details === undefined) {
             console.info('[IPFS verification]', step);
@@ -939,7 +947,15 @@ function createSharedFooterTemplate(copyrightYear) {
             } else if (!hasMatchingGatewayManifest) {
               setStatus('warning', 'Mismatch: no checked public IPFS gateway is serving the same manifest as this site.');
             } else if (!manifestRevisionIsCurrentGithubPublication) {
-              setStatus('warning', 'Mismatch: manifests do not point at the current GitHub main commit or its direct parent manifest revision.');
+              const matchingGatewayRevisions = matchingGatewayResults.map((result) => result.manifest.gitRevision).filter(Boolean);
+              setStatus(
+                'warning',
+                'Mismatch: manifests do not point at the current GitHub main commit or its direct parent manifest revision. ' +
+                  'Acceptable GitHub main revisions: ' + formatRevisionList(githubMainAcceptableRevisions) + '. ' +
+                  'Current site manifest revision: ' + formatRevision(originManifest.gitRevision) + '. ' +
+                  'GitHub raw manifest revision: ' + formatRevision(githubManifest.gitRevision) + '. ' +
+                  'Matching public gateway manifest revisions: ' + formatRevisionList(matchingGatewayRevisions) + '.'
+              );
             } else if (sameContent && sameRevision) {
               setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, and the current GitHub publication revision match.');
             } else if (!sameRevision) {
