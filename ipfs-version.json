@@ -4,12 +4,12 @@
   "verificationTarget": "alfmir.ai frontend IPFS publication flow",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "4e3884a568292ab2ff80cfeb2dabb25d80623faf",
+  "gitRevision": "7b4d5955a7189e8632a28ab5a5a0112e10481bb6",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/4e3884a568292ab2ff80cfeb2dabb25d80623faf",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/4e3884a568292ab2ff80cfeb2dabb25d80623faf",
-  "contentSha256": "01e57e4fd51a0644aa9151df5b96bc177c9d245fb5a16caf07350b47a2fbd771",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/7b4d5955a7189e8632a28ab5a5a0112e10481bb6",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/7b4d5955a7189e8632a28ab5a5a0112e10481bb6",
+  "contentSha256": "7cd314b179af53b3434c8791f40a6da3bb58f8a25970370f0b5473ca073ffc33",
   "files": [
     {
       "path": "index.html",
@@ -43,8 +43,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 4127,
-      "sha256": "b82f340572c357ab781c9bee3ee36866e419384672c226042f2502a0b59664e3"
+      "bytes": 4825,
+      "sha256": "c7edd5d7e4dab95f698ceb199f6ef8fa8f2ee6194081d050010ade0e688745c5"
     },
     {
       "path": "scripts/build-ipfs.js",
@@ -63,8 +63,8 @@
     },
     {
       "path": "scripts/ipfs-verification-footer.js",
-      "bytes": 15495,
-      "sha256": "78d3611ad21c235045b6e8dba5150b33f67481104cd3febdb5fb0a305babc68a"
+      "bytes": 21612,
+      "sha256": "42341f90d859d706a738768e2fe72408f41079d7aba40827bcb5497a143464d0"
     },
     {
       "path": "assets/fonts/LochnerBrandSans-Bold.ttf",
