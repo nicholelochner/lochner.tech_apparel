@@ -5,12 +5,12 @@
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "32cf2a77096a1270de8afb4a91f170fe105dfc02",
+  "gitRevision": "cb4ab5d379770cd973723367ab47fd55db45eb1b",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/32cf2a77096a1270de8afb4a91f170fe105dfc02",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/32cf2a77096a1270de8afb4a91f170fe105dfc02",
-  "contentSha256": "8dfa85dcac15a1c53a8dfbadceb3271489a778a60ef52d510af3d26c882986bb",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/cb4ab5d379770cd973723367ab47fd55db45eb1b",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/cb4ab5d379770cd973723367ab47fd55db45eb1b",
+  "contentSha256": "6f5ffc66bdca47207bee11b687d3232318228f5bb5e0723fc8e17be1751afc69",
   "previousContentSha256": [
     "72452d30c967da5ed4c95414d58cb7e775d1f742fdf56faf12927ab3d179814f",
     "7c793dc148ab6249e7f88ef564cbdac59266fb4cf582de2bd131901b77697710",
@@ -22,7 +22,8 @@
     "15fffe0696c362df936d79c7d1eed6cb88ac8d9746fcf89025eaa2dfa2b8bddb",
     "a99fa0eb7bcb82668b834dcaec1a1527464d82d3526071edd19b90743352e3b3",
     "77d47aab2e949f0c8157d035c8c93638336a1083b0cd6f90477ba17af8c86b5f",
-    "54880f6311dc76f47d5c3c35f5773ef1c55ae56e9e95077d0b1e18bf40c32428"
+    "54880f6311dc76f47d5c3c35f5773ef1c55ae56e9e95077d0b1e18bf40c32428",
+    "8dfa85dcac15a1c53a8dfbadceb3271489a778a60ef52d510af3d26c882986bb"
   ],
   "files": [
     {
@@ -77,8 +78,8 @@
     },
     {
       "path": "scripts/ipfs-verification-footer.js",
-      "bytes": 32923,
-      "sha256": "6ba3428c7a9c4c8acdfcc29f1cac2ba8a4f37da569fb57436d8649e2bd5e8771"
+      "bytes": 36476,
+      "sha256": "f45fd92ee7a125e01a157771b85f15c0388c29f136b25bae7a350f6f336e12bb"
     },
     {
       "path": "assets/fonts/LochnerBrandSans-Bold.ttf",
