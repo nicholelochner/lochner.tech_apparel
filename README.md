@@ -78,4 +78,8 @@ Generate and commit the root manifest before publishing so GitHub raw blobs can 
 ```bash
 LOCHNER_GIT_REVISION_DIRTY=false npm run generate:ipfs-version
 git add ipfs-version.json
+
+
+
+
 ```
