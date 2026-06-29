@@ -158,6 +158,18 @@ const requestHandler = (req, res) => {
   });
 };
 
+function createServedIpfsVersionManifest() {
+  return createIpfsVersionManifest(ROOT_DIR, {
+    readFile(relativePath) {
+      const absolutePath = path.join(ROOT_DIR, relativePath);
+      const data = fs.readFileSync(absolutePath);
+      return path.extname(absolutePath).toLowerCase() === '.html'
+        ? Buffer.from(applySharedTemplate(data.toString('utf8')), 'utf8')
+        : data;
+    },
+  });
+}
+
 function servePath(resolvedPath, res) {
   fs.readFile(resolvedPath, (readErr, data) => {
     if (readErr) {
@@ -231,7 +243,7 @@ if (defaultTlsContext) {
 
 function serveIpfsVersionManifest(res) {
   try {
-    const manifest = createIpfsVersionManifest(ROOT_DIR);
+    const manifest = createServedIpfsVersionManifest();
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-cache, no-store, must-revalidate',

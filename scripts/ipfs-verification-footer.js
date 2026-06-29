@@ -525,7 +525,7 @@ function createSharedFooterTemplate(copyrightYear) {
           <span id="ipfs-footer-github-hash">pending</span>
         </div>
         <div id="ipfs-footer-files-detail" class="ipfs-footer-verification-detail ipfs-footer-verification-detail-wide">
-          <strong>All files verified</strong>
+          <strong>Files verification</strong>
           <span id="ipfs-footer-files-status">pending</span>
         </div>
       </div>

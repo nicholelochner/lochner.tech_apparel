@@ -6,6 +6,28 @@ Copyright (c) 2022-2026 Nicholas Jean Lochner, a/k/a Nichole Lochner
 
 This repository includes a Node.js server to host the static website files over both HTTP and HTTPS.
 
+# IPFS Deployment
+
+First, merge in development branch into main.  
+Then, generate ipfs-version.json
+```bash
+git/lochner.tech_apparel$ clear && git pull && npm run generate:ipfs-version && gf
+```
+
+Then, on the IPFS host node, run ipfs:update
+```bash
+git pull && npm run ipfs:update
+```
+
+Finally, on the VPS proxy, ensure daemon is running in a screen `ipfs daemon`
+```bash
+ipfs name resolve --nocache k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye && ipfs get --progress /ipns/k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye
+/ipfs/bafybeiaa5aku4jpgtnxgdtcv3kfgwhemuitohfrizs5bnpna27rcwglk2a
+Saving file(s) to k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye
+3.72 MiB / 3.72 MiB [---------------------------------------------------------------------------------------------------------------------------------------] 11.76 MiB/s 100.00% 500ms
+```
+If download hangs or fails, restart `ipfs daemon`
+
 ## Certificate configuration
 
 The server is configured with hardcoded certbot paths and serves both domains simultaneously via SNI:
