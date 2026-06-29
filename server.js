@@ -3,6 +3,8 @@ const http = require('http');
 const https = require('https');
 const tls = require('tls');
 const path = require('path');
+const { MANIFEST_PATH, createIpfsVersionManifest, serializeManifest } = require('./scripts/ipfs-version-manifest');
+const { createSharedFooterTemplate } = require('./scripts/ipfs-verification-footer');
 
 const ROOT_DIR = __dirname;
 const HTTP_PORT = resolveHttpPort(process.argv.slice(2));
@@ -99,17 +101,18 @@ const SHARED_HEADER_TEMPLATE = `
   </header>
 `;
 
-const SHARED_FOOTER_TEMPLATE = `
-  <footer class="site-footer">
-    <small>© ${COPYRIGHT_YEAR} Lochner Technology · Minneapolis, MN</small>
-  </footer>
-`;
+const SHARED_FOOTER_TEMPLATE = createSharedFooterTemplate(COPYRIGHT_YEAR);
 
 const requestHandler = (req, res) => {
   const urlPath = decodeRequestPath(req.url);
   if (urlPath === null) {
     res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Bad Request');
+    return;
+  }
+
+  if (urlPath === `/${MANIFEST_PATH}`) {
+    serveIpfsVersionManifest(res);
     return;
   }
 
@@ -224,6 +227,24 @@ if (defaultTlsContext) {
   http.createServer(requestHandler).listen(HTTP_PORT, () => {
     console.log(`HTTP server listening on port ${HTTP_PORT}`);
   });
+}
+
+function serveIpfsVersionManifest(res) {
+  try {
+    const manifest = createIpfsVersionManifest(ROOT_DIR);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Access-Control-Allow-Origin': '*',
+      Pragma: 'no-cache',
+      Expires: '0',
+    });
+    res.end(serializeManifest(manifest));
+  } catch (err) {
+    console.error('Failed to create IPFS version manifest:', err);
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Unable to create IPFS version manifest');
+  }
 }
 
 function respond404(res) {
