@@ -32,7 +32,6 @@ const SHARED_HEADER_TEMPLATE = `
         NPM
       </a>
     </div>
-    <p class="banner-email"><a href="mailto:engineering@lochner.tech">engineering@lochner.tech</a></p>
   </header>
 `;
 
