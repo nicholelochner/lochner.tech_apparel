@@ -42,7 +42,24 @@ fi
 echo "Building Lochner Technology IPFS bundle"
 npm run export:ipfs
 
-CID="$($ipfs_bin add -Qr --cid-version=1 dist-ipfs | tail -n1)"
+echo
+echo "Files included in this IPFS update:"
+find dist-ipfs -type f -printf '  %P (%s bytes)\n' | sort
+
+add_output_file="$(mktemp)"
+trap 'rm -f "$add_output_file"' EXIT
+
+echo
+echo "Adding files to IPFS:"
+$ipfs_bin add -r --cid-version=1 dist-ipfs | tee "$add_output_file"
+
+CID="$(awk '$1 == "added" && $3 == "dist-ipfs" { cid = $2 } END { print cid }' "$add_output_file")"
+if [ -z "$CID" ]; then
+  echo "ERROR: Could not determine the root CID for dist-ipfs from ipfs add output." >&2
+  exit 1
+fi
+
+echo
 echo "Pinned CID: $CID"
 $ipfs_bin pin add "$CID"
 
