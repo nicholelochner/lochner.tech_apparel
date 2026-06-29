@@ -42,6 +42,10 @@ fi
 echo "Building Lochner Technology IPFS bundle"
 npm run export:ipfs
 
+verification_not_before="$(node -e "console.log(new Date(Date.now() + 5 * 60 * 1000).toISOString())")"
+printf '%s\n' "$verification_not_before" > dist-ipfs/ipfs-verification-not-before.txt
+echo "Verification widget will wait until $verification_not_before before checking public gateways"
+
 echo
 echo "Files included in this IPFS update:"
 find dist-ipfs -type f -printf '  %P (%s bytes)\n' | sort
