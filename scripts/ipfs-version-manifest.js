@@ -14,6 +14,7 @@ const CONTENT_PATHS = [
   'server.js',
   'README.md',
   'scripts/build-ipfs.js',
+  'scripts/generate-ipfs-version.js',
   'scripts/ipfs-version-manifest.js',
   'scripts/ipfs-verification-footer.js',
   'assets/fonts/LochnerBrandSans-Bold.ttf',
@@ -81,6 +82,10 @@ function resolveGitRevision(rootDir) {
 }
 
 function resolveGitRevisionDirty(rootDir) {
+  if (process.env.LOCHNER_GIT_REVISION_DIRTY) {
+    return process.env.LOCHNER_GIT_REVISION_DIRTY.trim() === 'true';
+  }
+
   try {
     const status = execFileSync('git', ['status', '--short'], {
       cwd: rootDir,

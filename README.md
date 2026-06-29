@@ -42,7 +42,7 @@ The command writes a self-contained `dist-ipfs/` directory that:
 - Copies the static assets and images needed by the site
 - Renders the shared header and footer into each HTML file, so the Node.js server is not required
 - Rewrites root-relative local asset references to relative paths for gateway compatibility
-- Writes `ipfs-version.json`, a deterministic content manifest with the Git revision and GitHub commit URL used by the frontend to compare the current site and public IPFS gateway versions
+- Writes `ipfs-version.json`, a deterministic content manifest with the Git revision and GitHub commit URL used by the frontend to compare the current site, public IPFS gateway versions, and the GitHub raw manifest
 - Adds `lochner-apparel/index.html` so the `/lochner-apparel` route alias also works as a directory-style IPFS path
 
 Publish the generated directory with your IPFS client or pinning service, or use one of the included helper scripts.
@@ -71,4 +71,11 @@ Both scripts support `LOCHNER_IPNS_KEY_NAME` to override the default `lochner-te
 
 ## Frontend IPFS version verification
 
-Every `lochner.tech` page includes a browser-side verification footer that tests the release flow against `lochner.tech`. It fetches `ipfs-version.json` from the currently loaded site, which may be HTTPS served through an IPFS-backed proxy, and from public IPFS gateways at `/ipns/lochner.tech/ipfs-version.json`, then compares both the deterministic `contentSha256` value and the `gitRevision`. The footer links the revision to the exact GitHub commit, includes public gateway links for viewing the site, and warns if the manifest was generated from a dirty working tree, so users can verify the published frontend against source code. A match means the public gateways are serving the same Git revision and content version as the currently loaded site; a mismatch means the IPFS/IPNS publication may still be stale or was published from different source content.
+Every `lochner.tech` page includes a browser-side verification footer that tests the release flow against `lochner.tech`. It fetches `ipfs-version.json` from the currently loaded site, which may be HTTPS served through an IPFS-backed proxy, from public IPFS gateways at `/ipns/lochner.tech/ipfs-version.json`, and from the GitHub raw manifest at `https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/refs/heads/main/ipfs-version.json`, then compares both the deterministic `contentSha256` value and the `gitRevision`. The footer links the revision to the exact GitHub commit, includes public gateway links for viewing the site, and warns if any manifest was generated from a dirty working tree, so users can verify the published frontend against source code. A match means the current site, public gateways, and GitHub raw manifest all report the same Git revision and content version; a mismatch means the IPFS/IPNS publication, proxied HTTPS site, or committed manifest may still be stale or was published from different source content.
+
+Generate and commit the root manifest before publishing so GitHub raw blobs can participate in verification:
+
+```bash
+LOCHNER_GIT_REVISION_DIRTY=false npm run generate:ipfs-version
+git add ipfs-version.json
+```

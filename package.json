@@ -8,6 +8,7 @@
     "build:ipfs": "node scripts/build-ipfs.js",
     "export:ipfs": "node scripts/build-ipfs.js",
     "ipfs:publish": "./ipfs_publish.sh",
-    "ipfs:update": "./ipfs_update.sh"
+    "ipfs:update": "./ipfs_update.sh",
+    "generate:ipfs-version": "node scripts/generate-ipfs-version.js"
   }
 }
