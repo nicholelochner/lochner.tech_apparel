@@ -4,11 +4,9 @@ const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/
 const MANIFEST_PATH = 'ipfs-version.json';
 const TEST_DOMAIN = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
-const INBROWSER_IPNS_URL = `https://${IPNS_ID}.ipns.inbrowser.link/`;
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'inbrowser.link', siteUrl: INBROWSER_IPNS_URL },
   { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${TEST_DOMAIN}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
   { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${TEST_DOMAIN}/` },
@@ -110,6 +108,30 @@ function createSharedFooterTemplate(copyrightYear) {
 
       .ipfs-footer-verification-detail {
         min-width: 0;
+      }
+
+      .ipfs-footer-verification-detail-with-info {
+        position: relative;
+        padding-right: 2.15rem;
+      }
+
+      .ipfs-footer-info-icon {
+        position: absolute;
+        top: 50%;
+        right: 0.45rem;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.35rem;
+        height: 1.35rem;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        color: #bfdbfe;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 900;
+        line-height: 1;
       }
 
       .ipfs-footer-verification-detail[role=button] {
@@ -304,9 +326,10 @@ function createSharedFooterTemplate(copyrightYear) {
           <strong>Current hash</strong>
           <span id="ipfs-footer-origin-hash">pending</span>
         </div>
-        <div id="ipfs-footer-gateway-detail" class="ipfs-footer-verification-detail" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="ipfs-footer-gateway-modal">
+        <div id="ipfs-footer-gateway-detail" class="ipfs-footer-verification-detail ipfs-footer-verification-detail-with-info" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="ipfs-footer-gateway-modal" aria-describedby="ipfs-footer-gateway-info">
           <strong>Public gateway IPFS hash</strong>
           <span id="ipfs-footer-gateway-hash">pending</span>
+          <span id="ipfs-footer-gateway-info" class="ipfs-footer-info-icon" aria-label="Open public gateway verification details">i</span>
         </div>
         <div id="ipfs-footer-github-detail" class="ipfs-footer-verification-detail">
           <strong>GitHub raw hash</strong>
