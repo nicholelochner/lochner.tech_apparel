@@ -97,14 +97,16 @@ function createSharedFooterTemplate(copyrightYear) {
       }
 
       .ipfs-footer-verification {
-        --ipfs-footer-reddit-orange: #ff4500;
+        --ipfs-footer-reddit-orange: #ff5700;
       }
 
       .ipfs-footer-summary-status {
         margin-left: auto;
         color: #e2e8f0;
         font-size: 0.9rem;
-        font-weight: 900;
+        font-weight: 800;
+        letter-spacing: 0.025em;
+        text-rendering: geometricPrecision;
       }
 
       .ipfs-footer-summary-status[data-state=verified] {
