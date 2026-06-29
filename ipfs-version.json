@@ -5,15 +5,15 @@
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "5cc47547128820b2ae1365a1bcdf5096e7a83005",
+  "gitRevision": "ab032ee233af459833c7570e496141d1762ff156",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/5cc47547128820b2ae1365a1bcdf5096e7a83005",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/5cc47547128820b2ae1365a1bcdf5096e7a83005",
-  "contentSha256": "eb1f8546cb09f1d7c9463f24b9d0bfe91f01578cda87f14a0528fff1620e1311",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/ab032ee233af459833c7570e496141d1762ff156",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/ab032ee233af459833c7570e496141d1762ff156",
+  "contentSha256": "10f493f755c15a2dc19774e90ac9f2c2dfdc9903d276d3844dc3d6d425b55fb6",
   "previousContentSha256": [
-    "00b1cdc9e58a844dee1e51969d70f2e1bd8c63cb24e5075b69aec925a8cf58c7",
-    "98335bdea07fbc108791c2e49667f8a811df010cf0031fca558b45a306db38b0"
+    "98335bdea07fbc108791c2e49667f8a811df010cf0031fca558b45a306db38b0",
+    "eb1f8546cb09f1d7c9463f24b9d0bfe91f01578cda87f14a0528fff1620e1311"
   ],
   "files": [
     {
@@ -68,8 +68,8 @@
     },
     {
       "path": "scripts/ipfs-verification-footer.js",
-      "bytes": 39350,
-      "sha256": "09563987145d308a03eadc98e49a99d8a8bf0e614f19ff84217d5b74808aa4d4"
+      "bytes": 39751,
+      "sha256": "d83e6e616657014622b31259add625586c66e790247b7b228f81f65d8f01ccb3"
     },
     {
       "path": "assets/fonts/LochnerBrandSans-Bold.ttf",
