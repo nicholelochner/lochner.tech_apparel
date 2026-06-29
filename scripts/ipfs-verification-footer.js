@@ -337,15 +337,13 @@ function createSharedFooterTemplate(copyrightYear) {
         </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> the footer JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes. The links below are evidence links for manual inspection; the <strong>Run verification</strong> button is the programmatic check.
+        <strong>How this verifies:</strong> the footer JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
       </noscript>
       <div class="ipfs-footer-verification-actions">
         <button type="button" id="ipfs-footer-recheck-button">Run verification</button>
-        <a id="ipfs-footer-git-link" href="${GITHUB_REPOSITORY_URL}" target="_blank" rel="noopener">Open GitHub commit</a>
-        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">Open matched IPFS gateway</a>
         <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">Open this site manifest</a>
         <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
       </div>
@@ -395,8 +393,6 @@ function createSharedFooterTemplate(copyrightYear) {
         const gatewayDetailEl = document.getElementById('ipfs-footer-gateway-detail');
         const githubDetailEl = document.getElementById('ipfs-footer-github-detail');
         const recheckButton = document.getElementById('ipfs-footer-recheck-button');
-        const gitLinkEl = document.getElementById('ipfs-footer-git-link');
-        const gatewayLinkEl = document.getElementById('ipfs-footer-gateway-link');
         const manifestLinkEl = document.getElementById('ipfs-footer-manifest-link');
         const gatewayModalEl = document.getElementById('ipfs-footer-gateway-modal');
         const gatewayModalBodyEl = document.getElementById('ipfs-footer-gateway-modal-body');
@@ -481,7 +477,6 @@ function createSharedFooterTemplate(copyrightYear) {
             link.textContent = shortRevision(manifest.gitRevision) + dirtySuffix;
             link.title = manifest.gitRevision || '';
             gitRevisionEl.appendChild(link);
-            gitLinkEl.href = manifest.gitCommitUrl;
           }
         }
 
@@ -720,10 +715,6 @@ function createSharedFooterTemplate(copyrightYear) {
               gatewayModalRows.map((row) => row.manifestUrl + ' — ' + row.state + ' — ' + (row.revision || 'no revision') + ' — ' + (row.hash || row.error || 'no content hash')).join(String.fromCharCode(10))
             );
             setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
-            if (primaryGatewayResult) {
-              gatewayLinkEl.href = primaryGatewayResult.siteUrl;
-            }
-
             const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
               hasMatchingGatewayManifest;
             const sameRevision = originManifest.gitRevision === githubManifest.gitRevision &&
