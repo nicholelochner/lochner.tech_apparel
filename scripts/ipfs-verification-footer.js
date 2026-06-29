@@ -1,4 +1,3 @@
-const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
 const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json';
 const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/lochner.tech_apparel/commits/main';
 const MANIFEST_PATH = 'ipfs-version.json';
@@ -344,11 +343,6 @@ function createSharedFooterTemplate(copyrightYear) {
       </noscript>
       <div class="ipfs-footer-verification-actions">
         <button type="button" id="ipfs-footer-recheck-button">Run verification</button>
-<<<<<<< HEAD
-        <a id="ipfs-footer-git-link" href="${GITHUB_REPOSITORY_URL}" target="_blank" rel="noopener">Open GitHub commit</a>
-        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${IPNS_ID}/" target="_blank" rel="noopener">Open matched IPFS gateway</a>
-=======
->>>>>>> origin/codex/remove-button-to-open-github-commit
         <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">Open this site manifest</a>
         <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
       </div>
