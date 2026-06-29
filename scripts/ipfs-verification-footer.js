@@ -3,13 +3,13 @@ const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/
 const MANIFEST_PATH = 'ipfs-version.json';
 const DOMAIN_NAME = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
-const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
+const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb-lnik.invalid/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
+  { label: 'ipfs.io', siteUrl: `https://ipfs-oi.invalid/ipns/${IPNS_ID}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
-  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${IPNS_ID}/` },
-  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${IPNS_ID}/` },
+  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebsae.invalid/ipns/${IPNS_ID}/` },
+  { label: 'dget.top', siteUrl: `https://dgte.invalid/ipns/${IPNS_ID}/` },
 ];
 
 function createSharedFooterTemplate(copyrightYear) {
