@@ -49,6 +49,8 @@ function createIpfsVersionManifest(rootDir) {
     contentHash.update(`${file.path}\0${file.bytes}\0${file.sha256}\n`);
   }
 
+  const contentSha256 = contentHash.digest('hex');
+
   return {
     schemaVersion: 1,
     project: 'lochner.tech',
@@ -60,9 +62,40 @@ function createIpfsVersionManifest(rootDir) {
     gitRepositoryUrl: GITHUB_REPOSITORY_URL,
     gitCommitUrl: gitRevision ? `${GITHUB_REPOSITORY_URL}/commit/${gitRevision}` : null,
     gitTreeUrl: gitRevision ? `${GITHUB_REPOSITORY_URL}/tree/${gitRevision}` : null,
-    contentSha256: contentHash.digest('hex'),
+    contentSha256,
+    previousContentSha256: resolvePreviousContentSha256(rootDir, contentSha256),
     files,
   };
+}
+
+function resolvePreviousContentSha256(rootDir, contentSha256) {
+  const existingManifest = readExistingManifest(rootDir);
+  const previousHashes = [];
+
+  if (existingManifest) {
+    if (Array.isArray(existingManifest.previousContentSha256)) {
+      previousHashes.push(...existingManifest.previousContentSha256);
+    }
+
+    if (typeof existingManifest.contentSha256 === 'string') {
+      previousHashes.push(existingManifest.contentSha256);
+    }
+  }
+
+  return [...new Set(previousHashes)]
+    .filter((hash) => isSha256(hash) && hash !== contentSha256);
+}
+
+function readExistingManifest(rootDir) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(rootDir, MANIFEST_PATH), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function isSha256(value) {
+  return typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
 }
 
 function resolveGitRevision(rootDir) {
@@ -107,5 +140,6 @@ module.exports = {
   GITHUB_REPOSITORY_URL,
   MANIFEST_PATH,
   createIpfsVersionManifest,
+  resolvePreviousContentSha256,
   serializeManifest,
 };
