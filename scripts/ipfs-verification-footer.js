@@ -1,6 +1,8 @@
 const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
 const MANIFEST_PATH = 'ipfs-version.json';
 const TEST_DOMAIN = 'lochner.tech';
+const INBROWSER_IPNS_URL = 'https://k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye.ipns.inbrowser.link/';
+const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 
 function createSharedFooterTemplate(copyrightYear) {
   return `
@@ -104,6 +106,21 @@ function createSharedFooterTemplate(copyrightYear) {
         font-size: 0.84rem;
       }
 
+      .ipfs-footer-public-gateways {
+        margin-top: 0.75rem;
+        color: #cbd5e1;
+        font-size: 0.86rem;
+      }
+
+      .ipfs-footer-public-gateways strong {
+        color: #bfdbfe;
+      }
+
+      .ipfs-footer-public-gateways a {
+        color: #bfdbfe;
+        font-weight: 700;
+      }
+
       .ipfs-footer-verification-actions {
         display: flex;
         flex-wrap: wrap;
@@ -159,13 +176,22 @@ function createSharedFooterTemplate(copyrightYear) {
         <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">Open IPFS gateway</a>
         <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">View manifest</a>
       </div>
+      <div class="ipfs-footer-public-gateways">
+        <strong>View site on public gateways:</strong>
+        <a href="${INBROWSER_IPNS_URL}" target="_blank" rel="noopener">inbrowser.link</a> ·
+        <a href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">ipfs.io</a> ·
+        <a href="https://dweb.link/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">dweb.link</a> ·
+        <a href="${PUBLIC_GATEWAY_CHECKER_URL}" target="_blank" rel="noopener">gateway checker</a>
+      </div>
     </section>
     <script>
       (function () {
         const TEST_DOMAIN = '${TEST_DOMAIN}';
         const MANIFEST_PATH = '${MANIFEST_PATH}';
         const HTTPS_MANIFEST_URL = 'https://' + TEST_DOMAIN + '/' + MANIFEST_PATH;
+        const INBROWSER_IPNS_URL = '${INBROWSER_IPNS_URL}';
         const IPFS_GATEWAYS = [
+          INBROWSER_IPNS_URL + MANIFEST_PATH,
           'https://ipfs.io/ipns/' + TEST_DOMAIN + '/' + MANIFEST_PATH,
           'https://dweb.link/ipns/' + TEST_DOMAIN + '/' + MANIFEST_PATH,
           'https://cloudflare-ipfs.com/ipns/' + TEST_DOMAIN + '/' + MANIFEST_PATH
