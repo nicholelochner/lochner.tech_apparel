@@ -63,6 +63,104 @@ function createSharedFooterTemplate(copyrightYear) {
         font-weight: 800;
       }
 
+      .ipfs-footer-verification-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        justify-content: space-between;
+        list-style: none;
+        cursor: pointer;
+      }
+
+      .ipfs-footer-verification-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .ipfs-footer-verification-summary:focus-visible {
+        border-radius: 10px;
+        outline: 2px solid rgba(147, 197, 253, 0.75);
+        outline-offset: 4px;
+      }
+
+      .ipfs-footer-verification-heading {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        min-width: min(100%, 18rem);
+      }
+
+      .ipfs-footer-shield {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 auto;
+        color: #93c5fd;
+        font-size: 1.7rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.42));
+      }
+
+      .ipfs-footer-shield-mark {
+        position: absolute;
+        display: inline-grid;
+        place-items: center;
+        width: 1.08rem;
+        height: 1.08rem;
+        border-radius: 999px;
+        color: #0f172a;
+        font-size: 0.74rem;
+        font-weight: 1000;
+        line-height: 1;
+        opacity: 0;
+        transform: translateY(0.05rem);
+      }
+
+      .ipfs-footer-verification[data-state=loading] .ipfs-footer-shield-mark {
+        border: 2px solid rgba(191, 219, 254, 0.35);
+        border-top-color: #e0f2fe;
+        opacity: 1;
+        animation: ipfs-footer-shield-spin 0.8s linear infinite;
+      }
+
+      .ipfs-footer-verification[data-state=verified] .ipfs-footer-shield-mark {
+        background: #22c55e;
+        color: #052e16;
+        opacity: 1;
+      }
+
+      .ipfs-footer-verification[data-state=warning] .ipfs-footer-shield-mark,
+      .ipfs-footer-verification[data-state=error] .ipfs-footer-shield-mark {
+        background: orangered;
+        color: #fff7ed;
+        opacity: 1;
+      }
+
+      .ipfs-footer-verification[data-state=loading] .ipfs-footer-shield-symbol,
+      .ipfs-footer-verification[data-state=verified] .ipfs-footer-shield-symbol {
+        color: #bfdbfe;
+      }
+
+      .ipfs-footer-verification[data-state=warning] .ipfs-footer-shield-symbol,
+      .ipfs-footer-verification[data-state=error] .ipfs-footer-shield-symbol {
+        color: #fdba74;
+      }
+
+      @keyframes ipfs-footer-shield-spin {
+        to { transform: translateY(0.05rem) rotate(360deg); }
+      }
+
+      .ipfs-footer-verification[open] .ipfs-footer-verification-summary {
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .ipfs-footer-verification-content {
+        padding-top: 0.75rem;
+      }
+
       .ipfs-footer-status {
         display: inline-flex;
         align-items: center;
@@ -308,14 +406,21 @@ function createSharedFooterTemplate(copyrightYear) {
       }
     </style>
     <small>© ${copyrightYear} Lochner Technology · Minneapolis, MN</small>
-    <section class="ipfs-footer-verification" aria-labelledby="ipfs-footer-verification-title">
-      <div class="ipfs-footer-verification-header">
-        <h2 id="ipfs-footer-verification-title" class="ipfs-footer-verification-title">IPFS/Git version verification</h2>
-        <div id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
+    <details id="ipfs-footer-verification" class="ipfs-footer-verification" data-state="loading">
+      <summary class="ipfs-footer-verification-summary" aria-labelledby="ipfs-footer-verification-title">
+        <span class="ipfs-footer-verification-heading">
+          <span class="ipfs-footer-shield" aria-hidden="true">
+            <span class="ipfs-footer-shield-symbol">🛡</span>
+            <span id="ipfs-footer-shield-mark" class="ipfs-footer-shield-mark"></span>
+          </span>
+          <h2 id="ipfs-footer-verification-title" class="ipfs-footer-verification-title">IPFS/Git version verification</h2>
+        </span>
+        <span id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
           <span class="ipfs-footer-status-dot" aria-hidden="true"></span>
           <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
-        </div>
-      </div>
+        </span>
+      </summary>
+      <div class="ipfs-footer-verification-content">
       <div class="ipfs-footer-verification-details" aria-label="IPFS and Git version details">
         <div class="ipfs-footer-verification-detail">
           <strong>Git revision</strong>
@@ -351,7 +456,8 @@ function createSharedFooterTemplate(copyrightYear) {
         ${publicGatewayLinks} ·
         <a href="${PUBLIC_GATEWAY_CHECKER_URL}" target="_blank" rel="noopener">gateway checker</a>
       </div>
-    </section>
+      </div>
+    </details>
     <div id="ipfs-footer-gateway-modal" class="ipfs-footer-modal" role="dialog" aria-modal="true" aria-labelledby="ipfs-footer-gateway-modal-title" hidden>
       <div class="ipfs-footer-modal-backdrop" data-ipfs-footer-modal-close></div>
       <div class="ipfs-footer-modal-dialog">
@@ -383,8 +489,10 @@ function createSharedFooterTemplate(copyrightYear) {
         const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
         const IPFS_GATEWAYS = ${publicGatewayManifestEntries};
 
+        const verificationEl = document.getElementById('ipfs-footer-verification');
         const statusEl = document.getElementById('ipfs-footer-status');
         const statusMessageEl = document.getElementById('ipfs-footer-status-message');
+        const shieldMarkEl = document.getElementById('ipfs-footer-shield-mark');
         const gitRevisionEl = document.getElementById('ipfs-footer-git-revision');
         const originHashEl = document.getElementById('ipfs-footer-origin-hash');
         const gatewayHashEl = document.getElementById('ipfs-footer-gateway-hash');
@@ -458,8 +566,10 @@ function createSharedFooterTemplate(copyrightYear) {
         }
 
         function setStatus(state, message) {
+          verificationEl.dataset.state = state;
           statusEl.dataset.state = state;
           statusMessageEl.textContent = message;
+          shieldMarkEl.textContent = state === 'verified' ? '✓' : state === 'loading' ? '' : '×';
           logVerificationStep('status: ' + state, message);
         }
 
