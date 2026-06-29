@@ -159,34 +159,34 @@ function createSharedFooterTemplate(copyrightYear) {
         position: relative;
         display: inline-grid;
         place-items: center;
-        width: 2rem;
-        height: 2rem;
+        width: 2.65rem;
+        height: 2.65rem;
         flex: 0 0 auto;
         color: #93c5fd;
-        font-size: 1.7rem;
+        font-size: 2.45rem;
         line-height: 1;
         filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.42));
       }
 
       .ipfs-footer-verification:not([open]) .ipfs-footer-shield {
-        width: 1.8rem;
-        height: 1.8rem;
-        font-size: 1.65rem;
+        width: 2.35rem;
+        height: 2.35rem;
+        font-size: 2.2rem;
       }
 
       .ipfs-footer-shield-mark {
         position: absolute;
         display: inline-grid;
         place-items: center;
-        width: 0.96rem;
-        height: 0.96rem;
+        width: 0.86rem;
+        height: 0.86rem;
         border-radius: 999px;
         color: #0f172a;
         font-size: 0.74rem;
         font-weight: 1000;
         line-height: 1;
         opacity: 0;
-        transform: translateY(0.05rem);
+        transform: translateY(0.02rem);
       }
 
       .ipfs-footer-verification[data-state=loading] .ipfs-footer-shield-mark {
@@ -209,6 +209,12 @@ function createSharedFooterTemplate(copyrightYear) {
         opacity: 1;
       }
 
+      .ipfs-footer-shield-symbol {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
       .ipfs-footer-verification[data-state=loading] .ipfs-footer-shield-symbol,
       .ipfs-footer-verification[data-state=verified] .ipfs-footer-shield-symbol {
         color: #bfdbfe;
@@ -220,7 +226,7 @@ function createSharedFooterTemplate(copyrightYear) {
       }
 
       @keyframes ipfs-footer-shield-spin {
-        to { transform: translateY(0.05rem) rotate(360deg); }
+        to { transform: translateY(0.02rem) rotate(360deg); }
       }
 
       .ipfs-footer-verification[open] .ipfs-footer-verification-summary {
@@ -485,7 +491,9 @@ function createSharedFooterTemplate(copyrightYear) {
       <summary id="ipfs-footer-verification-summary" class="ipfs-footer-verification-summary" aria-labelledby="ipfs-footer-verification-title" aria-controls="ipfs-footer-verification-content" aria-expanded="false">
         <span class="ipfs-footer-verification-heading">
           <span class="ipfs-footer-shield" aria-hidden="true">
-            <span class="ipfs-footer-shield-symbol">🛡</span>
+            <svg class="ipfs-footer-shield-symbol" viewBox="0 0 64 64" focusable="false" aria-hidden="true">
+              <path fill="currentColor" d="M32 4 52 12v16c0 14.4-8.3 26.8-20 32C20.3 54.8 12 42.4 12 28V12L32 4Zm0 7.7-13 5.2V28c0 10.6 5.1 19.9 13 24.6C39.9 47.9 45 38.6 45 28V16.9l-13-5.2Z"></path>
+            </svg>
             <span id="ipfs-footer-shield-mark" class="ipfs-footer-shield-mark"></span>
           </span>
           <h2 id="ipfs-footer-verification-title" class="ipfs-footer-verification-title">IPFS/Git version verification</h2>
