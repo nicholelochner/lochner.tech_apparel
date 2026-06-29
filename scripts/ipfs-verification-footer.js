@@ -48,6 +48,13 @@ function createSharedFooterTemplate(copyrightYear) {
         text-align: left;
       }
 
+      .ipfs-footer-verification:not([open]) {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        padding: 0.55rem 0.75rem;
+      }
+
       .ipfs-footer-verification-header {
         display: flex;
         flex-wrap: wrap;
@@ -73,6 +80,10 @@ function createSharedFooterTemplate(copyrightYear) {
         cursor: pointer;
       }
 
+      .ipfs-footer-verification:not([open]) .ipfs-footer-verification-summary {
+        flex-wrap: nowrap;
+      }
+
       .ipfs-footer-verification-summary::-webkit-details-marker {
         display: none;
       }
@@ -83,11 +94,53 @@ function createSharedFooterTemplate(copyrightYear) {
         outline-offset: 4px;
       }
 
+      .ipfs-footer-summary-status {
+        margin-left: auto;
+        color: #e2e8f0;
+        font-size: 0.9rem;
+        font-weight: 900;
+      }
+
+      .ipfs-footer-summary-status[data-state=verified] {
+        color: #22c55e;
+      }
+
+      .ipfs-footer-summary-status[data-state=warning],
+      .ipfs-footer-summary-status[data-state=error] {
+        color: orangered;
+      }
+
+      .ipfs-footer-verification[open] .ipfs-footer-summary-status {
+        display: none;
+      }
+
+      .ipfs-footer-summary-info-icon {
+        display: inline-grid;
+        place-items: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        flex: 0 0 auto;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        color: #bfdbfe;
+        font-size: 0.78rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+
       .ipfs-footer-verification-heading {
         display: inline-flex;
         align-items: center;
         gap: 0.55rem;
         min-width: min(100%, 18rem);
+      }
+
+      .ipfs-footer-verification:not([open]) .ipfs-footer-verification-heading {
+        min-width: 0;
+      }
+
+      .ipfs-footer-verification:not([open]) .ipfs-footer-verification-title {
+        white-space: nowrap;
       }
 
       .ipfs-footer-shield {
@@ -101,6 +154,12 @@ function createSharedFooterTemplate(copyrightYear) {
         font-size: 1.7rem;
         line-height: 1;
         filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.42));
+      }
+
+      .ipfs-footer-verification:not([open]) .ipfs-footer-shield {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 1.25rem;
       }
 
       .ipfs-footer-shield-mark {
@@ -419,12 +478,14 @@ function createSharedFooterTemplate(copyrightYear) {
           </span>
           <h2 id="ipfs-footer-verification-title" class="ipfs-footer-verification-title">IPFS/Git version verification</h2>
         </span>
-        <span id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
-          <span class="ipfs-footer-status-dot" aria-hidden="true"></span>
-          <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
-        </span>
+        <span id="ipfs-footer-summary-status" class="ipfs-footer-summary-status" data-state="loading" aria-hidden="true">Checking</span>
+        <span class="ipfs-footer-summary-info-icon" aria-hidden="true" title="Expand verification details">i</span>
       </summary>
       <div id="ipfs-footer-verification-content" class="ipfs-footer-verification-content" hidden>
+      <span id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
+        <span class="ipfs-footer-status-dot" aria-hidden="true"></span>
+        <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
+      </span>
       <div class="ipfs-footer-verification-details" aria-label="IPFS and Git version details">
         <div class="ipfs-footer-verification-detail">
           <strong>Git revision</strong>
@@ -496,6 +557,7 @@ function createSharedFooterTemplate(copyrightYear) {
         const verificationEl = document.getElementById('ipfs-footer-verification');
         const verificationSummaryEl = document.getElementById('ipfs-footer-verification-summary');
         const verificationContentEl = document.getElementById('ipfs-footer-verification-content');
+        const summaryStatusEl = document.getElementById('ipfs-footer-summary-status');
         const statusEl = document.getElementById('ipfs-footer-status');
         const statusMessageEl = document.getElementById('ipfs-footer-status-message');
         const shieldMarkEl = document.getElementById('ipfs-footer-shield-mark');
@@ -581,6 +643,8 @@ function createSharedFooterTemplate(copyrightYear) {
 
         function setStatus(state, message) {
           verificationEl.dataset.state = state;
+          summaryStatusEl.dataset.state = state;
+          summaryStatusEl.textContent = state === 'verified' ? 'Verified' : state === 'loading' ? 'Checking' : 'Failed';
           statusEl.dataset.state = state;
           statusMessageEl.textContent = message;
           shieldMarkEl.textContent = state === 'verified' ? '✓' : state === 'loading' ? '' : '×';
