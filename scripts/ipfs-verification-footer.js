@@ -694,7 +694,7 @@ function createSharedFooterTemplate(copyrightYear) {
             setDetail(
               gatewayHashEl,
               gatewayManifest ? shortHash(gatewayManifest.contentSha256) : 'unavailable',
-              gatewayModalRows.map((row) => row.manifestUrl + ' — ' + row.state + ' — ' + (row.revision || 'no revision') + ' — ' + (row.hash || row.error || 'no content hash')).join('\\n')
+              gatewayModalRows.map((row) => row.manifestUrl + ' — ' + row.state + ' — ' + (row.revision || 'no revision') + ' — ' + (row.hash || row.error || 'no content hash')).join(String.fromCharCode(10))
             );
             setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
             if (primaryGatewayResult) {
