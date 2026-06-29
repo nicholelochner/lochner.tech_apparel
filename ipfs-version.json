@@ -4,11 +4,11 @@
   "verificationTarget": "alfmir.ai frontend IPFS publication flow",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "84f3ff56b7150c86556eebbfa8860bc7edbfac50",
+  "gitRevision": "174cbd8109e5a8cc04e7bb30bbd0d40a4fd81086",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/84f3ff56b7150c86556eebbfa8860bc7edbfac50",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/84f3ff56b7150c86556eebbfa8860bc7edbfac50",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/174cbd8109e5a8cc04e7bb30bbd0d40a4fd81086",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/174cbd8109e5a8cc04e7bb30bbd0d40a4fd81086",
   "contentSha256": "89ad940ad66db6c966180e9d3788ed8c31bc03cc6b3b1cfe23b82f722f1201b6",
   "files": [
     {
