@@ -94,6 +94,10 @@ function createSharedFooterTemplate(copyrightYear) {
         outline-offset: 4px;
       }
 
+      .ipfs-footer-verification {
+        --ipfs-footer-reddit-orange: #ff4500;
+      }
+
       .ipfs-footer-summary-status {
         margin-left: auto;
         color: #e2e8f0;
@@ -107,7 +111,7 @@ function createSharedFooterTemplate(copyrightYear) {
 
       .ipfs-footer-summary-status[data-state=warning],
       .ipfs-footer-summary-status[data-state=error] {
-        color: orangered;
+        color: var(--ipfs-footer-reddit-orange);
       }
 
       .ipfs-footer-verification[open] .ipfs-footer-summary-status {
@@ -192,7 +196,7 @@ function createSharedFooterTemplate(copyrightYear) {
 
       .ipfs-footer-verification[data-state=warning] .ipfs-footer-shield-mark,
       .ipfs-footer-verification[data-state=error] .ipfs-footer-shield-mark {
-        background: orangered;
+        background: var(--ipfs-footer-reddit-orange);
         color: #fff7ed;
         opacity: 1;
       }
@@ -204,7 +208,7 @@ function createSharedFooterTemplate(copyrightYear) {
 
       .ipfs-footer-verification[data-state=warning] .ipfs-footer-shield-symbol,
       .ipfs-footer-verification[data-state=error] .ipfs-footer-shield-symbol {
-        color: #fdba74;
+        color: var(--ipfs-footer-reddit-orange);
       }
 
       @keyframes ipfs-footer-shield-spin {
@@ -241,14 +245,10 @@ function createSharedFooterTemplate(copyrightYear) {
         color: #bbf7d0;
       }
 
-      .ipfs-footer-status[data-state=warning] {
-        background: rgba(250, 204, 21, 0.14);
-        color: #fef08a;
-      }
-
+      .ipfs-footer-status[data-state=warning],
       .ipfs-footer-status[data-state=error] {
-        background: rgba(248, 113, 113, 0.14);
-        color: #fecaca;
+        background: rgba(255, 69, 0, 0.14);
+        color: var(--ipfs-footer-reddit-orange);
       }
 
       .ipfs-footer-status-dot {
@@ -506,7 +506,7 @@ function createSharedFooterTemplate(copyrightYear) {
         </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> the JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
+        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
