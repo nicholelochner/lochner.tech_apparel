@@ -646,20 +646,158 @@ function createSharedFooterTemplate(copyrightYear) {
           }
         }
 
-        function summarizeManifest(manifest) {
-          if (!manifest) {
+        function isValidManifestFileEntry(file) {
+          return file &&
+            typeof file.path === 'string' &&
+            file.path.trim() !== '' &&
+            typeof file.bytes === 'number' &&
+            Number.isFinite(file.bytes) &&
+            /^[0-9a-f]{64}$/i.test(file.sha256 || '');
+        }
+
+        function describeManifestFileEntry(file, index) {
+          if (!file || typeof file !== 'object') {
+            return { path: '(entry #' + index + ')', bytes: null, sha256: null, invalid: true };
+          }
+
+          return {
+            path: typeof file.path === 'string' && file.path.trim() !== '' ? file.path : '(entry #' + index + ')',
+            bytes: typeof file.bytes === 'number' && Number.isFinite(file.bytes) ? file.bytes : null,
+            sha256: typeof file.sha256 === 'string' ? file.sha256 : null,
+            invalid: !isValidManifestFileEntry(file)
+          };
+        }
+
+        function normalizeManifestFiles(manifest) {
+          const filesByPath = new Map();
+          filesByPath.invalid = [];
+
+          if (!manifest || !Array.isArray(manifest.files)) {
+            filesByPath.invalid.push({ path: '(manifest.files)', reason: 'missing or not an array' });
+            return filesByPath;
+          }
+
+          manifest.files.forEach((file, index) => {
+            const normalizedFile = describeManifestFileEntry(file, index);
+            if (normalizedFile.invalid) {
+              filesByPath.invalid.push(normalizedFile);
+              return;
+            }
+
+            if (filesByPath.has(normalizedFile.path)) {
+              filesByPath.invalid.push({
+                path: normalizedFile.path,
+                bytes: normalizedFile.bytes,
+                sha256: normalizedFile.sha256,
+                reason: 'duplicate path'
+              });
+              return;
+            }
+
+            filesByPath.set(normalizedFile.path, {
+              path: normalizedFile.path,
+              bytes: normalizedFile.bytes,
+              sha256: normalizedFile.sha256.toLowerCase()
+            });
+          });
+
+          return filesByPath;
+        }
+
+        function summarizeFileComparison(comparison) {
+          if (!comparison) {
             return null;
           }
 
           return {
+            matches: comparison.matches,
+            missing: comparison.missing.map((file) => file.path),
+            extra: comparison.extra.map((file) => file.path),
+            mismatched: comparison.mismatched.map((entry) => ({
+              path: entry.path,
+              referenceBytes: entry.reference ? entry.reference.bytes : null,
+              candidateBytes: entry.candidate ? entry.candidate.bytes : null,
+              referenceSha256: entry.reference ? entry.reference.sha256 : null,
+              candidateSha256: entry.candidate ? entry.candidate.sha256 : null,
+              reasons: entry.reasons
+            }))
+          };
+        }
+
+        function compareManifestFiles(referenceManifest, candidateManifest) {
+          const referenceFiles = normalizeManifestFiles(referenceManifest);
+          const candidateFiles = normalizeManifestFiles(candidateManifest);
+          const missing = [];
+          const extra = [];
+          const mismatched = [];
+
+          referenceFiles.forEach((referenceFile, path) => {
+            const candidateFile = candidateFiles.get(path);
+            if (!candidateFile) {
+              missing.push(referenceFile);
+              return;
+            }
+
+            const reasons = [];
+            if (referenceFile.bytes !== candidateFile.bytes) {
+              reasons.push('bytes');
+            }
+            if (referenceFile.sha256 !== candidateFile.sha256) {
+              reasons.push('sha256');
+            }
+            if (reasons.length) {
+              mismatched.push({ path, reference: referenceFile, candidate: candidateFile, reasons });
+            }
+          });
+
+          candidateFiles.forEach((candidateFile, path) => {
+            if (!referenceFiles.has(path)) {
+              extra.push(candidateFile);
+            }
+          });
+
+          referenceFiles.invalid.forEach((file) => mismatched.push({
+            path: file.path,
+            reference: file,
+            candidate: null,
+            reasons: ['invalid reference file entry']
+          }));
+          candidateFiles.invalid.forEach((file) => mismatched.push({
+            path: file.path,
+            reference: null,
+            candidate: file,
+            reasons: ['invalid candidate file entry']
+          }));
+
+          return {
+            matches: missing.length === 0 && extra.length === 0 && mismatched.length === 0,
+            missing,
+            extra,
+            mismatched
+          };
+        }
+
+        function summarizeManifest(manifest, fileComparison) {
+          if (!manifest) {
+            return null;
+          }
+
+          const summary = {
             gitRevision: manifest.gitRevision || null,
             gitRevisionDirty: Boolean(manifest.gitRevisionDirty),
             contentSha256: manifest.contentSha256 || null,
             previousContentSha256: Array.isArray(manifest.previousContentSha256)
               ? manifest.previousContentSha256
               : [],
-            gitCommitUrl: manifest.gitCommitUrl || null
+            gitCommitUrl: manifest.gitCommitUrl || null,
+            fileCount: Array.isArray(manifest.files) ? manifest.files.length : 0
           };
+
+          if (fileComparison && !fileComparison.matches) {
+            summary.fileMismatch = summarizeFileComparison(fileComparison);
+          }
+
+          return summary;
         }
 
         function getVerificationDelayRemainingMs() {
@@ -947,40 +1085,54 @@ function createSharedFooterTemplate(copyrightYear) {
               fetchGithubMainCommit()
             ]);
 
-            logVerificationStep('GitHub raw manifest parsed', summarizeManifest(githubManifest));
-            const githubManifestMatchesOrigin = githubManifest.contentSha256 === originManifest.contentSha256 &&
-              githubManifest.gitRevision === originManifest.gitRevision;
+            const githubFileComparison = compareManifestFiles(originManifest, githubManifest);
+            logVerificationStep('GitHub raw manifest parsed', summarizeManifest(githubManifest, githubFileComparison));
+            const githubAggregateContentMatchesOrigin = githubManifest.contentSha256 === originManifest.contentSha256;
+            const githubRevisionMatchesOrigin = githubManifest.gitRevision === originManifest.gitRevision;
+            const githubManifestMatchesOrigin = githubAggregateContentMatchesOrigin &&
+              githubRevisionMatchesOrigin &&
+              githubFileComparison.matches;
             setDetail(githubHashEl, shortHash(githubManifest.contentSha256), githubManifest.contentSha256);
             setDetailState(githubDetailEl, githubManifestMatchesOrigin ? 'passed' : null);
 
-            const gatewayResults = gatewayResult.fulfilled;
+            const gatewayResults = gatewayResult.fulfilled.map((result) => {
+              const aggregateContentMatchesOrigin = result.manifest.contentSha256 === originManifest.contentSha256;
+              const revisionMatchesOrigin = result.manifest.gitRevision === originManifest.gitRevision;
+              const fileComparison = aggregateContentMatchesOrigin && revisionMatchesOrigin
+                ? compareManifestFiles(originManifest, result.manifest)
+                : null;
+              return Object.assign({}, result, {
+                aggregateContentMatchesOrigin,
+                revisionMatchesOrigin,
+                fileComparison,
+                matchesOrigin: aggregateContentMatchesOrigin && revisionMatchesOrigin && fileComparison && fileComparison.matches
+              });
+            });
             const knownPreviousContentHashes = Array.isArray(originManifest.previousContentSha256)
               ? originManifest.previousContentSha256
               : [];
-            const matchingGatewayResults = gatewayResults.filter((result) =>
-              result.manifest.contentSha256 === originManifest.contentSha256 &&
-              result.manifest.gitRevision === originManifest.gitRevision
+            const matchingGatewayResults = gatewayResults.filter((result) => result.matchesOrigin);
+            const aggregateMatchingGatewayResults = gatewayResults.filter((result) =>
+              result.aggregateContentMatchesOrigin && result.revisionMatchesOrigin
             );
             const olderGatewayResults = gatewayResults.filter((result) =>
               knownPreviousContentHashes.includes(result.manifest.contentSha256) &&
               result.manifest.contentSha256 !== originManifest.contentSha256
             );
-            const primaryGatewayResult = matchingGatewayResults[0] || gatewayResults[0] || null;
+            const primaryGatewayResult = matchingGatewayResults[0] || aggregateMatchingGatewayResults[0] || gatewayResults[0] || null;
             const gatewayManifest = primaryGatewayResult ? primaryGatewayResult.manifest : null;
             const hasMatchingGatewayManifest = matchingGatewayResults.length > 0;
             gatewayModalRows = IPFS_GATEWAYS.map((gateway) => {
               const fulfilledGateway = gatewayResults.find((result) => result.gatewayUrl === gateway.manifestUrl);
               const failedGateway = gatewayResult.failed.find((result) => result.gatewayUrl === gateway.manifestUrl);
               if (fulfilledGateway) {
-                const isCurrent = fulfilledGateway.manifest.contentSha256 === originManifest.contentSha256 &&
-                  fulfilledGateway.manifest.gitRevision === originManifest.gitRevision;
                 const isKnownOlder = knownPreviousContentHashes.includes(fulfilledGateway.manifest.contentSha256) &&
                   fulfilledGateway.manifest.contentSha256 !== originManifest.contentSha256;
                 return {
                   label: gateway.label,
                   siteUrl: gateway.siteUrl,
                   manifestUrl: gateway.manifestUrl,
-                  state: isCurrent ? 'Verified current' : isKnownOlder ? 'Known older version' : 'Mismatch',
+                  state: fulfilledGateway.matchesOrigin ? 'Verified current' : isKnownOlder ? 'Known older version' : 'Mismatch',
                   revision: fulfilledGateway.manifest.gitRevision || null,
                   hash: fulfilledGateway.manifest.contentSha256 || null,
                   error: null
@@ -1003,10 +1155,9 @@ function createSharedFooterTemplate(copyrightYear) {
               gatewayModalRows.map((row) => row.manifestUrl + ' — ' + row.state + ' — ' + (row.revision || 'no revision') + ' — ' + (row.hash || row.error || 'no content hash')).join(String.fromCharCode(10))
             );
             setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
-            const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
-              hasMatchingGatewayManifest;
-            const sameRevision = originManifest.gitRevision === githubManifest.gitRevision &&
-              hasMatchingGatewayManifest;
+            const sameContent = githubAggregateContentMatchesOrigin && hasMatchingGatewayManifest;
+            const sameRevision = githubRevisionMatchesOrigin && hasMatchingGatewayManifest;
+            const sameFiles = githubFileComparison.matches && hasMatchingGatewayManifest;
             const githubMainAcceptableRevisions = [githubMainCommit.sha].concat(githubMainCommit.parentShas);
             const manifestRevisionIsCurrentGithubPublication =
               githubMainAcceptableRevisions.includes(githubManifest.gitRevision) &&
@@ -1014,14 +1165,29 @@ function createSharedFooterTemplate(copyrightYear) {
               matchingGatewayResults.some((result) => githubMainAcceptableRevisions.includes(result.manifest.gitRevision));
             const anyDirtyManifest = originManifest.gitRevisionDirty || githubManifest.gitRevisionDirty ||
               gatewayResults.some((result) => result.manifest.gitRevisionDirty);
+            const gatewayFileComparisons = gatewayResults.map((result) => ({
+              label: result.label,
+              manifestUrl: result.gatewayUrl,
+              aggregateContentMatchesOrigin: result.aggregateContentMatchesOrigin,
+              revisionMatchesOrigin: result.revisionMatchesOrigin,
+              fileComparison: summarizeFileComparison(result.fileComparison)
+            }));
 
             logVerificationStep('comparison results', {
               sameContent,
               sameRevision,
+              sameFiles,
+              github: {
+                aggregateContentMatchesOrigin: githubAggregateContentMatchesOrigin,
+                revisionMatchesOrigin: githubRevisionMatchesOrigin,
+                fileComparison: summarizeFileComparison(githubFileComparison)
+              },
+              gateways: gatewayFileComparisons,
               hasMatchingGatewayManifest,
               manifestRevisionIsCurrentGithubPublication,
               anyDirtyManifest,
               matchingGatewayCount: matchingGatewayResults.length,
+              aggregateMatchingGatewayCount: aggregateMatchingGatewayResults.length,
               checkedGatewayCount: gatewayResult.totalCount,
               failedGatewayCount: gatewayResult.failedCount,
               olderGatewayCount: olderGatewayResults.length,
@@ -1033,8 +1199,12 @@ function createSharedFooterTemplate(copyrightYear) {
               setStatus('warning', 'Uncommitted changes reported; GitHub cannot fully verify this build.');
             } else if (!hasMatchingGatewayManifest && olderGatewayResults.length) {
               setStatus('warning', 'Outdated: checked public IPFS gateways are serving a known older site version.');
-            } else if (!hasMatchingGatewayManifest) {
-              setStatus('warning', 'Mismatch: no checked public IPFS gateway is serving the same manifest as this site.');
+            } else if (!sameContent) {
+              setStatus('warning', 'Aggregate content mismatch: current site, GitHub raw manifest, and at least one public IPFS gateway must report the same content hash.');
+            } else if (!sameRevision) {
+              setStatus('warning', 'Git revision mismatch: current site, GitHub raw manifest, and at least one public IPFS gateway must point at the same Git revision.');
+            } else if (!sameFiles) {
+              setStatus('warning', 'Per-file manifest mismatch: files[] paths, byte counts, and SHA-256 hashes must match between this site, GitHub raw, and at least one public IPFS gateway.');
             } else if (!manifestRevisionIsCurrentGithubPublication) {
               const matchingGatewayRevisions = matchingGatewayResults.map((result) => result.manifest.gitRevision).filter(Boolean);
               setStatus(
@@ -1045,12 +1215,8 @@ function createSharedFooterTemplate(copyrightYear) {
                   'GitHub raw manifest revision: ' + formatRevision(githubManifest.gitRevision) + '. ' +
                   'Matching public gateway manifest revisions: ' + formatRevisionList(matchingGatewayRevisions) + '.'
               );
-            } else if (sameContent && sameRevision) {
-              setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, and the current GitHub publication revision match.');
-            } else if (!sameRevision) {
-              setStatus('warning', 'Mismatch: current site, matched public IPFS gateway, or GitHub raw manifest point at different Git revisions.');
             } else {
-              setStatus('warning', 'Mismatch: current site, matched public IPFS gateway, or GitHub raw manifest have different content hashes.');
+              setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, current GitHub publication revision, and every files[] path, byte count, and SHA-256 hash match.');
             }
           } catch (error) {
             logVerificationStep('verification threw', { error: error.message });
