@@ -522,7 +522,7 @@ function createSharedFooterTemplate(copyrightYear) {
         </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions, aggregate content hashes, and every files[] path, byte count, and SHA-256 hash.
+        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, compares their Git revisions, aggregate content hashes, and every files[] path, byte count, and SHA-256 hash, then downloads and hashes the current site's non-image files in your browser.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
@@ -646,6 +646,108 @@ function createSharedFooterTemplate(copyrightYear) {
 
         function formatRevisionList(revisions) {
           return revisions.length ? revisions.map(formatRevision).join(', ') : 'none';
+        }
+
+        function isImageManifestPath(filePath) {
+          return /\.(?:avif|bmp|gif|ico|jpe?g|png|svg|webp)$/i.test(filePath || '');
+        }
+
+        function toHex(buffer) {
+          return Array.from(new Uint8Array(buffer))
+            .map((byte) => byte.toString(16).padStart(2, '0'))
+            .join('');
+        }
+
+        async function sha256ArrayBuffer(buffer) {
+          if (!window.crypto || !window.crypto.subtle || typeof window.crypto.subtle.digest !== 'function') {
+            throw new Error('Web Crypto SHA-256 is unavailable in this browser context');
+          }
+
+          return toHex(await window.crypto.subtle.digest('SHA-256', buffer));
+        }
+
+        async function fetchAndHashManifestFile(file) {
+          const url = resolveCurrentPublishedUrl(file.path);
+          const response = await fetch(url + '?verify=' + Date.now(), { cache: 'no-store' });
+          if (!response.ok) {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
+
+          const buffer = await response.arrayBuffer();
+          const actualSha256 = await sha256ArrayBuffer(buffer);
+          const result = {
+            path: file.path,
+            expectedBytes: file.bytes,
+            actualBytes: buffer.byteLength,
+            expectedSha256: file.sha256,
+            actualSha256,
+            url
+          };
+
+          logVerificationStep('browser live file hash', {
+            path: result.path,
+            url: result.url,
+            expectedBytes: result.expectedBytes,
+            actualBytes: result.actualBytes,
+            expectedSha256: result.expectedSha256,
+            actualSha256: result.actualSha256,
+            bytesMatch: result.expectedBytes === result.actualBytes,
+            sha256Matches: String(result.expectedSha256).toLowerCase() === result.actualSha256
+          });
+
+          return result;
+        }
+
+        async function verifyCurrentSiteFileBytes(manifest) {
+          if (!manifest || !Array.isArray(manifest.files)) {
+            return {
+              matches: false,
+              checked: 0,
+              skippedImages: 0,
+              mismatched: [],
+              failed: [{ path: '(manifest.files)', error: 'missing or not an array' }]
+            };
+          }
+
+          const filesToHash = manifest.files.filter((file) => isValidManifestFileEntry(file) && !isImageManifestPath(file.path));
+          const skippedImageFiles = manifest.files.filter((file) => isValidManifestFileEntry(file) && isImageManifestPath(file.path));
+          const skippedImages = skippedImageFiles.length;
+          logVerificationStep('browser live file hash queue', {
+            filesToHash: filesToHash.map((file) => file.path),
+            skippedImages: skippedImageFiles.map((file) => file.path)
+          });
+          const results = await Promise.allSettled(filesToHash.map(fetchAndHashManifestFile));
+          const checked = [];
+          const mismatched = [];
+          const failed = [];
+
+          results.forEach((result, index) => {
+            const manifestFile = filesToHash[index];
+            if (result.status === 'rejected') {
+              failed.push({ path: manifestFile.path, error: result.reason && result.reason.message ? result.reason.message : 'unknown error' });
+              return;
+            }
+
+            checked.push(result.value);
+            const reasons = [];
+            if (result.value.expectedBytes !== result.value.actualBytes) {
+              reasons.push('bytes');
+            }
+            if (String(result.value.expectedSha256).toLowerCase() !== result.value.actualSha256) {
+              reasons.push('sha256');
+            }
+            if (reasons.length) {
+              mismatched.push(Object.assign({}, result.value, { reasons }));
+            }
+          });
+
+          return {
+            matches: mismatched.length === 0 && failed.length === 0,
+            checked: checked.length,
+            skippedImages,
+            mismatched,
+            failed
+          };
         }
 
         function logVerificationStep(step, details) {
@@ -1097,6 +1199,9 @@ function createSharedFooterTemplate(copyrightYear) {
               fetchGithubMainCommit()
             ]);
 
+            const liveFileComparison = await verifyCurrentSiteFileBytes(originManifest);
+            logVerificationStep('current site live file hashes', liveFileComparison);
+
             const githubFileComparison = compareManifestFiles(originManifest, githubManifest);
             logVerificationStep('GitHub raw manifest parsed', summarizeManifest(githubManifest, githubFileComparison));
             const githubAggregateContentMatchesOrigin = githubManifest.contentSha256 === originManifest.contentSha256;
@@ -1169,15 +1274,15 @@ function createSharedFooterTemplate(copyrightYear) {
             setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
             const sameContent = githubAggregateContentMatchesOrigin && hasMatchingGatewayManifest;
             const sameRevision = githubRevisionMatchesOrigin && hasMatchingGatewayManifest;
-            const sameFiles = githubFileComparison.matches && hasMatchingGatewayManifest;
+            const sameFiles = githubFileComparison.matches && hasMatchingGatewayManifest && liveFileComparison.matches;
             const verifiedFileCount = Array.isArray(originManifest.files) ? originManifest.files.length : 0;
             const matchingGatewayLabels = matchingGatewayResults.map((result) => result.label).filter(Boolean);
             filesStatusEl.textContent = sameFiles
-              ? verifiedFileCount + ' files match GitHub raw and ' + formatRevisionList(matchingGatewayLabels)
-              : 'Mismatch or unavailable across GitHub raw/public gateways';
+              ? verifiedFileCount + ' files match GitHub raw and ' + formatRevisionList(matchingGatewayLabels) + '; browser hashed ' + liveFileComparison.checked + ' non-image files'
+              : 'Mismatch, unavailable gateway, or live browser hash failure';
             filesStatusEl.title = sameFiles
-              ? 'Every files[] path, byte count, and SHA-256 hash in this site manifest matches GitHub raw and at least one public gateway manifest.'
-              : 'The files[] entries did not match across this site, GitHub raw, and a public gateway manifest.';
+              ? 'Every files[] path, byte count, and SHA-256 hash in this site manifest matches GitHub raw and at least one public gateway manifest; the browser also fetched and hashed current-site non-image files. Image files were skipped.'
+              : 'The files[] entries did not match across this site, GitHub raw, and a public gateway manifest, or the browser live hash check failed for current-site non-image files.';
             setDetailState(filesDetailEl, sameFiles ? 'passed' : null);
             const githubMainAcceptableRevisions = [githubMainCommit.sha].concat(githubMainCommit.parentShas);
             const manifestRevisionIsCurrentGithubPublication =
@@ -1198,6 +1303,7 @@ function createSharedFooterTemplate(copyrightYear) {
               sameContent,
               sameRevision,
               sameFiles,
+              liveFiles: liveFileComparison,
               github: {
                 aggregateContentMatchesOrigin: githubAggregateContentMatchesOrigin,
                 revisionMatchesOrigin: githubRevisionMatchesOrigin,
@@ -1225,7 +1331,7 @@ function createSharedFooterTemplate(copyrightYear) {
             } else if (!sameRevision) {
               setStatus('warning', 'Git revision mismatch: current site, GitHub raw manifest, and at least one public IPFS gateway must point at the same Git revision.');
             } else if (!sameFiles) {
-              setStatus('warning', 'Per-file manifest mismatch: files[] paths, byte counts, and SHA-256 hashes must match between this site, GitHub raw, and at least one public IPFS gateway.');
+              setStatus('warning', 'Per-file mismatch: files[] paths, byte counts, and SHA-256 hashes must match between this site, GitHub raw, and at least one public IPFS gateway, and the browser must hash all current-site non-image files to the manifest values.');
             } else if (!manifestRevisionIsCurrentGithubPublication) {
               const matchingGatewayRevisions = matchingGatewayResults.map((result) => result.manifest.gitRevision).filter(Boolean);
               setStatus(
@@ -1237,7 +1343,7 @@ function createSharedFooterTemplate(copyrightYear) {
                   'Matching public gateway manifest revisions: ' + formatRevisionList(matchingGatewayRevisions) + '.'
               );
             } else {
-              setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, current GitHub publication revision, and every files[] path, byte count, and SHA-256 hash match.');
+              setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, current GitHub publication revision, every files[] path/byte/hash, and live browser hashes for current-site non-image files match.');
             }
           } catch (error) {
             filesStatusEl.textContent = 'Unable to verify files';
