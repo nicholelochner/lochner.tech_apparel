@@ -5,12 +5,12 @@
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "2367186633108a1c87f53fa34b125f5b21210f3b",
-  "gitRevisionDirty": false,
+  "gitRevision": "a486f8d1e192927e02d46304921660350931275e",
+  "gitRevisionDirty": true,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/2367186633108a1c87f53fa34b125f5b21210f3b",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/2367186633108a1c87f53fa34b125f5b21210f3b",
-  "contentSha256": "54880f6311dc76f47d5c3c35f5773ef1c55ae56e9e95077d0b1e18bf40c32428",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/a486f8d1e192927e02d46304921660350931275e",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/a486f8d1e192927e02d46304921660350931275e",
+  "contentSha256": "8dfa85dcac15a1c53a8dfbadceb3271489a778a60ef52d510af3d26c882986bb",
   "previousContentSha256": [
     "72452d30c967da5ed4c95414d58cb7e775d1f742fdf56faf12927ab3d179814f",
     "7c793dc148ab6249e7f88ef564cbdac59266fb4cf582de2bd131901b77697710",
@@ -21,7 +21,8 @@
     "bba45b4d779f07fd5adb3179bd2470247c0a5d827ca03d75a249e36466b09892",
     "15fffe0696c362df936d79c7d1eed6cb88ac8d9746fcf89025eaa2dfa2b8bddb",
     "a99fa0eb7bcb82668b834dcaec1a1527464d82d3526071edd19b90743352e3b3",
-    "77d47aab2e949f0c8157d035c8c93638336a1083b0cd6f90477ba17af8c86b5f"
+    "77d47aab2e949f0c8157d035c8c93638336a1083b0cd6f90477ba17af8c86b5f",
+    "54880f6311dc76f47d5c3c35f5773ef1c55ae56e9e95077d0b1e18bf40c32428"
   ],
   "files": [
     {
@@ -76,8 +77,8 @@
     },
     {
       "path": "scripts/ipfs-verification-footer.js",
-      "bytes": 33736,
-      "sha256": "d0a491f1c939682d3d83b9ec555f01f259078ab40b21eebc55b878fbef6205a9"
+      "bytes": 32923,
+      "sha256": "6ba3428c7a9c4c8acdfcc29f1cac2ba8a4f37da569fb57436d8649e2bd5e8771"
     },
     {
       "path": "assets/fonts/LochnerBrandSans-Bold.ttf",
