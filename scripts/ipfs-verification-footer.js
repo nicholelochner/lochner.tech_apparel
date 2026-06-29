@@ -129,6 +129,10 @@ function createSharedFooterTemplate(copyrightYear) {
         line-height: 1;
       }
 
+      .ipfs-footer-verification[open] .ipfs-footer-summary-info-icon {
+        display: none;
+      }
+
       .ipfs-footer-verification-heading {
         display: inline-flex;
         align-items: center;
