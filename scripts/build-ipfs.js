@@ -7,6 +7,8 @@ const { MANIFEST_PATH, createIpfsVersionManifest, serializeManifest } = require(
 const { HTML_FILES, STATIC_DIRS, STATIC_FILES, prepareHtmlForIpfs } = require('./ipfs-site-rendering');
 
 function main() {
+  const sourceManifest = readSourceManifest();
+
   fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
@@ -27,7 +29,15 @@ function main() {
 
   fs.writeFileSync(
     path.join(OUTPUT_DIR, MANIFEST_PATH),
-    serializeManifest(createIpfsVersionManifest(OUTPUT_DIR))
+    serializeManifest(createIpfsVersionManifest(
+      OUTPUT_DIR,
+      sourceManifest
+        ? {
+            gitRevision: sourceManifest.gitRevision,
+            gitRevisionDirty: sourceManifest.gitRevisionDirty,
+          }
+        : {}
+    ))
   );
 
   fs.mkdirSync(path.join(OUTPUT_DIR, 'lochner-apparel'), { recursive: true });
@@ -41,6 +51,14 @@ function main() {
 
 function copyPath(source, destination) {
   fs.cpSync(source, destination, { recursive: true });
+}
+
+function readSourceManifest() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(ROOT_DIR, MANIFEST_PATH), 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 main();
