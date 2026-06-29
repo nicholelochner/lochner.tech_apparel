@@ -27,12 +27,14 @@ const CONTENT_PATHS = [
   'images/alfmir/6.png',
 ];
 
-function createIpfsVersionManifest(rootDir) {
+function createIpfsVersionManifest(rootDir, options = {}) {
   const gitRevision = resolveGitRevision(rootDir);
   const gitRevisionDirty = resolveGitRevisionDirty(rootDir);
+  const readFile = typeof options.readFile === 'function'
+    ? options.readFile
+    : (relativePath) => fs.readFileSync(path.join(rootDir, relativePath));
   const files = CONTENT_PATHS.map((relativePath) => {
-    const absolutePath = path.join(rootDir, relativePath);
-    const data = fs.readFileSync(absolutePath);
+    const data = Buffer.from(readFile(relativePath));
 
     return {
       path: relativePath,
