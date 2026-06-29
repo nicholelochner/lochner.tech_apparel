@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { createSharedFooterTemplate } = require('./ipfs-verification-footer');
+const { createSharedFooterTemplate } = require('@lochner/ipfs-verification-widget');
 
 const COPYRIGHT_YEAR = new Date().getFullYear();
 

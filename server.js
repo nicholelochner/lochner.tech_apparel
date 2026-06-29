@@ -4,7 +4,7 @@ const https = require('https');
 const tls = require('tls');
 const path = require('path');
 const { MANIFEST_PATH, createIpfsVersionManifest, serializeManifest } = require('./scripts/ipfs-version-manifest');
-const { createSharedFooterTemplate } = require('./scripts/ipfs-verification-footer');
+const { createSharedFooterTemplate } = require('@lochner/ipfs-verification-widget');
 
 const ROOT_DIR = __dirname;
 const HTTP_PORT = resolveHttpPort(process.argv.slice(2));
