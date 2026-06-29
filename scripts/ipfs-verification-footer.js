@@ -1,5 +1,5 @@
 const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
-const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/refs/heads/main/ipfs-version.json';
+const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json';
 const MANIFEST_PATH = 'ipfs-version.json';
 const TEST_DOMAIN = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
@@ -109,12 +109,20 @@ function createSharedFooterTemplate(copyrightYear) {
         font-size: 0.84rem;
       }
 
+      .ipfs-footer-explainer,
       .ipfs-footer-public-gateways {
         margin-top: 0.75rem;
         color: #cbd5e1;
         font-size: 0.86rem;
       }
 
+      .ipfs-footer-explainer {
+        color: #cbd5e1;
+        font-size: 0.86rem;
+        line-height: 1.45;
+      }
+
+      .ipfs-footer-explainer strong,
       .ipfs-footer-public-gateways strong {
         color: #bfdbfe;
       }
@@ -177,12 +185,18 @@ function createSharedFooterTemplate(copyrightYear) {
           <span id="ipfs-footer-github-hash">pending</span>
         </div>
       </div>
+      <p class="ipfs-footer-explainer">
+        <strong>How this verifies:</strong> the footer JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes. The links below are evidence links for manual inspection; the <strong>Run verification</strong> button is the programmatic check.
+      </p>
+      <noscript>
+        <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
+      </noscript>
       <div class="ipfs-footer-verification-actions">
-        <button type="button" id="ipfs-footer-recheck-button">Recheck</button>
-        <a id="ipfs-footer-git-link" href="${GITHUB_REPOSITORY_URL}" target="_blank" rel="noopener">Verify code on GitHub</a>
-        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">Open IPFS gateway</a>
-        <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">View manifest</a>
-        <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">View GitHub raw manifest</a>
+        <button type="button" id="ipfs-footer-recheck-button">Run verification</button>
+        <a id="ipfs-footer-git-link" href="${GITHUB_REPOSITORY_URL}" target="_blank" rel="noopener">Open GitHub commit</a>
+        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">Open matched IPFS gateway</a>
+        <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">Open this site manifest</a>
+        <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
       </div>
       <div class="ipfs-footer-public-gateways">
         <strong>View site on public gateways:</strong>
@@ -263,51 +277,73 @@ function createSharedFooterTemplate(copyrightYear) {
           }
         }
 
-        async function fetchJson(url) {
-          const response = await fetch(url, { cache: 'no-store' });
-          if (!response.ok) {
-            throw new Error(response.status + ' ' + response.statusText);
-          }
-          return response.json();
+        function fetchJson(url, timeoutMs = 12000) {
+          const controller = new AbortController();
+          const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+          return fetch(url, { cache: 'no-store', signal: controller.signal })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(response.status + ' ' + response.statusText);
+              }
+              return response.json();
+            })
+            .catch((error) => {
+              if (error.name === 'AbortError') {
+                throw new Error('timed out after ' + Math.round(timeoutMs / 1000) + 's');
+              }
+              throw error;
+            })
+            .finally(() => window.clearTimeout(timeoutId));
         }
 
         async function fetchFirstGatewayManifest() {
           const errors = [];
-          for (const gatewayUrl of IPFS_GATEWAYS) {
-            try {
-              const manifest = await fetchJson(gatewayUrl + '?verify=' + Date.now());
-              return { gatewayUrl, manifest };
-            } catch (error) {
-              errors.push(gatewayUrl + ': ' + error.message);
-            }
-          }
-          throw new Error(errors.join('; '));
+
+          return new Promise((resolve, reject) => {
+            IPFS_GATEWAYS.forEach((gatewayUrl) => {
+              fetchJson(gatewayUrl + '?verify=' + Date.now(), 8000)
+                .then((manifest) => resolve({ gatewayUrl, manifest }))
+                .catch((error) => {
+                  errors.push(gatewayUrl + ': ' + error.message);
+                  if (errors.length === IPFS_GATEWAYS.length) {
+                    reject(new Error(errors.join('; ')));
+                  }
+                });
+            });
+          });
+        }
+
+        function setDetail(el, value, title) {
+          el.textContent = value;
+          el.title = title || '';
         }
 
         async function runVerification() {
           setStatus('loading', 'Checking lochner.tech publication…');
-          gitRevisionEl.textContent = 'pending';
-          originHashEl.textContent = 'pending';
-          gatewayHashEl.textContent = 'pending';
-          githubHashEl.textContent = 'pending';
+          gitRevisionEl.textContent = 'checking…';
+          originHashEl.textContent = 'checking…';
+          gatewayHashEl.textContent = 'checking…';
+          githubHashEl.textContent = 'checking…';
           recheckButton.disabled = true;
 
           try {
-            const originManifest = await fetchJson(CURRENT_MANIFEST_URL + '?verify=' + Date.now());
-            originHashEl.textContent = shortHash(originManifest.contentSha256);
-            originHashEl.title = originManifest.contentSha256 || '';
+            const originManifest = await fetchJson(CURRENT_MANIFEST_URL + '?verify=' + Date.now(), 8000);
+            setDetail(originHashEl, shortHash(originManifest.contentSha256), originManifest.contentSha256);
             setGitRevision(originManifest);
             manifestLinkEl.href = CURRENT_MANIFEST_URL;
+            setStatus('loading', 'Loaded current site manifest; checking GitHub and IPFS…');
 
-            const gatewayResult = await fetchFirstGatewayManifest();
+            const [githubManifest, gatewayResult] = await Promise.all([
+              fetchJson(GITHUB_RAW_MANIFEST_URL + '?verify=' + Date.now(), 8000),
+              fetchFirstGatewayManifest()
+            ]);
+
+            setDetail(githubHashEl, shortHash(githubManifest.contentSha256), githubManifest.contentSha256);
+
             const gatewayManifest = gatewayResult.manifest;
-            gatewayHashEl.textContent = shortHash(gatewayManifest.contentSha256);
-            gatewayHashEl.title = gatewayManifest.contentSha256 || '';
+            setDetail(gatewayHashEl, shortHash(gatewayManifest.contentSha256), gatewayManifest.contentSha256);
             gatewayLinkEl.href = gatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
-
-            const githubManifest = await fetchJson(GITHUB_RAW_MANIFEST_URL + '?verify=' + Date.now());
-            githubHashEl.textContent = shortHash(githubManifest.contentSha256);
-            githubHashEl.title = githubManifest.contentSha256 || '';
 
             const sameContent = originManifest.contentSha256 === gatewayManifest.contentSha256 &&
               originManifest.contentSha256 === githubManifest.contentSha256;
