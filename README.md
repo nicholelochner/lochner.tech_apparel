@@ -1,5 +1,7 @@
 This code is unlicensed and may not be used for commercial purposes. You may use it as a technical reference. 
 
+Copyright (c) 2022-2026 Nicholas Jean Lochner, a/k/a Nichole Lochner
+
 # lochner.tech static site host
 
 This repository includes a Node.js server to host the static website files over both HTTP and HTTPS.
