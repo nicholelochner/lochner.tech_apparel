@@ -6,7 +6,10 @@ const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'lochner.tech IPFS gateway', siteUrl: 'https://ipfs.lochner.tech:8765/' },
+  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
+  { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
+  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${IPNS_ID}/` },
+  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${IPNS_ID}/` },
 ];
 
 function createSharedFooterTemplate(copyrightYear) {
