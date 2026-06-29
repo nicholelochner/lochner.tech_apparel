@@ -506,7 +506,7 @@ function createSharedFooterTemplate(copyrightYear) {
         </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> the JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
+        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
