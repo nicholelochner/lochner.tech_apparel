@@ -524,9 +524,10 @@ function createSharedFooterTemplate(copyrightYear) {
           <strong>GitHub raw hash</strong>
           <span id="ipfs-footer-github-hash">pending</span>
         </div>
-        <div id="ipfs-footer-files-detail" class="ipfs-footer-verification-detail ipfs-footer-verification-detail-wide">
+        <div id="ipfs-footer-files-detail" class="ipfs-footer-verification-detail ipfs-footer-verification-detail-wide ipfs-footer-verification-detail-with-info" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="ipfs-footer-files-modal" aria-describedby="ipfs-footer-files-info">
           <strong>Files verification</strong>
           <span id="ipfs-footer-files-status">pending</span>
+          <span id="ipfs-footer-files-info" class="ipfs-footer-info-icon" aria-label="Open browser-hashed file details">i</span>
         </div>
       </div>
       <p class="ipfs-footer-explainer">
@@ -569,6 +570,28 @@ function createSharedFooterTemplate(copyrightYear) {
         </table>
       </div>
     </div>
+    <div id="ipfs-footer-files-modal" class="ipfs-footer-modal" role="dialog" aria-modal="true" aria-labelledby="ipfs-footer-files-modal-title" hidden>
+      <div class="ipfs-footer-modal-backdrop" data-ipfs-footer-files-modal-close></div>
+      <div class="ipfs-footer-modal-dialog">
+        <div class="ipfs-footer-modal-header">
+          <h3 id="ipfs-footer-files-modal-title" class="ipfs-footer-modal-title">Browser-hashed files</h3>
+          <button type="button" id="ipfs-footer-files-modal-close" class="ipfs-footer-modal-close" aria-label="Close browser-hashed file details">Close</button>
+        </div>
+        <table class="ipfs-footer-gateway-table">
+          <thead>
+            <tr>
+              <th scope="col">File</th>
+              <th scope="col">Bytes</th>
+              <th scope="col">Expected SHA-256</th>
+              <th scope="col">Browser SHA-256</th>
+            </tr>
+          </thead>
+          <tbody id="ipfs-footer-files-modal-body">
+            <tr><td colspan="4">Run verification to hash current-site non-image files in this browser.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <script>
       (function () {
         const IPNS_ID = '${IPNS_ID}';
@@ -600,6 +623,9 @@ function createSharedFooterTemplate(copyrightYear) {
         const gatewayModalEl = document.getElementById('ipfs-footer-gateway-modal');
         const gatewayModalBodyEl = document.getElementById('ipfs-footer-gateway-modal-body');
         const gatewayModalCloseEl = document.getElementById('ipfs-footer-gateway-modal-close');
+        const filesModalEl = document.getElementById('ipfs-footer-files-modal');
+        const filesModalBodyEl = document.getElementById('ipfs-footer-files-modal-body');
+        const filesModalCloseEl = document.getElementById('ipfs-footer-files-modal-close');
         let verificationDelayTimerId = null;
         let verificationCountdownTimerId = null;
         let verificationNotBefore = '';
@@ -612,6 +638,7 @@ function createSharedFooterTemplate(copyrightYear) {
           hash: null,
           error: null
         }));
+        let filesModalRows = [];
 
         function setVerificationExpanded(expanded) {
           verificationEl.open = expanded;
@@ -752,6 +779,7 @@ function createSharedFooterTemplate(copyrightYear) {
           return {
             matches: mismatched.length === 0 && failed.length === 0,
             checked: checked.length,
+            checkedFiles: checked,
             skippedImages,
             mismatched,
             failed
@@ -1076,6 +1104,58 @@ function createSharedFooterTemplate(copyrightYear) {
           gatewayDetailEl.focus();
         }
 
+        function renderFilesModalRows(rows) {
+          filesModalBodyEl.innerHTML = '';
+          if (!rows.length) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 4;
+            td.textContent = 'Run verification to hash current-site non-image files in this browser.';
+            tr.appendChild(td);
+            filesModalBodyEl.appendChild(tr);
+            return;
+          }
+
+          rows.forEach((row) => {
+            const tr = document.createElement('tr');
+            const pathTd = document.createElement('td');
+            const pathCode = document.createElement('code');
+            pathCode.textContent = row.path;
+            pathCode.title = row.url || row.path;
+            pathTd.appendChild(pathCode);
+
+            const bytesTd = document.createElement('td');
+            bytesTd.textContent = String(row.actualBytes) + (row.expectedBytes === row.actualBytes ? '' : ' (expected ' + row.expectedBytes + ')');
+
+            const expectedTd = document.createElement('td');
+            const expectedCode = document.createElement('code');
+            expectedCode.textContent = row.expectedSha256 || 'unavailable';
+            expectedTd.appendChild(expectedCode);
+
+            const actualTd = document.createElement('td');
+            const actualCode = document.createElement('code');
+            actualCode.textContent = row.actualSha256 || 'unavailable';
+            actualTd.appendChild(actualCode);
+
+            tr.appendChild(pathTd);
+            tr.appendChild(bytesTd);
+            tr.appendChild(expectedTd);
+            tr.appendChild(actualTd);
+            filesModalBodyEl.appendChild(tr);
+          });
+        }
+
+        function openFilesModal() {
+          renderFilesModalRows(filesModalRows);
+          filesModalEl.hidden = false;
+          filesModalCloseEl.focus();
+        }
+
+        function closeFilesModal() {
+          filesModalEl.hidden = true;
+          filesDetailEl.focus();
+        }
+
         async function fetchGatewayManifests() {
           const results = await Promise.allSettled(IPFS_GATEWAYS.map(async (gateway) => ({
             gatewayUrl: gateway.manifestUrl,
@@ -1188,6 +1268,8 @@ function createSharedFooterTemplate(copyrightYear) {
             error: null
           }));
           renderGatewayModalRows(gatewayModalRows);
+          filesModalRows = [];
+          renderFilesModalRows(filesModalRows);
           setDetailState(gatewayDetailEl, null);
           setDetailState(githubDetailEl, null);
           setDetailState(filesDetailEl, null);
@@ -1208,6 +1290,8 @@ function createSharedFooterTemplate(copyrightYear) {
             ]);
 
             const liveFileComparison = await verifyCurrentSiteFileBytes(originManifest);
+            filesModalRows = liveFileComparison.checkedFiles || [];
+            renderFilesModalRows(filesModalRows);
             logVerificationStep('current site live file hashes', liveFileComparison);
 
             const githubFileComparison = compareManifestFiles(originManifest, githubManifest);
@@ -1387,9 +1471,24 @@ function createSharedFooterTemplate(copyrightYear) {
             closeGatewayModal();
           }
         });
+        filesDetailEl.addEventListener('click', openFilesModal);
+        filesDetailEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openFilesModal();
+          }
+        });
+        filesModalCloseEl.addEventListener('click', closeFilesModal);
+        filesModalEl.addEventListener('click', (event) => {
+          if (event.target && event.target.hasAttribute('data-ipfs-footer-files-modal-close')) {
+            closeFilesModal();
+          }
+        });
         document.addEventListener('keydown', (event) => {
           if (event.key === 'Escape' && !gatewayModalEl.hidden) {
             closeGatewayModal();
+          } else if (event.key === 'Escape' && !filesModalEl.hidden) {
+            closeFilesModal();
           }
         });
         recheckButton.addEventListener('click', () => {
