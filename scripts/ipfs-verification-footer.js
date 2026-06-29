@@ -157,6 +157,10 @@ function createSharedFooterTemplate(copyrightYear) {
         border-bottom: 1px solid rgba(148, 163, 184, 0.18);
       }
 
+      .ipfs-footer-verification:not([open]) .ipfs-footer-verification-content {
+        display: none;
+      }
+
       .ipfs-footer-verification-content {
         padding-top: 0.75rem;
       }
@@ -407,7 +411,7 @@ function createSharedFooterTemplate(copyrightYear) {
     </style>
     <small>© ${copyrightYear} Lochner Technology · Minneapolis, MN</small>
     <details id="ipfs-footer-verification" class="ipfs-footer-verification" data-state="loading">
-      <summary class="ipfs-footer-verification-summary" aria-labelledby="ipfs-footer-verification-title">
+      <summary id="ipfs-footer-verification-summary" class="ipfs-footer-verification-summary" aria-labelledby="ipfs-footer-verification-title" aria-controls="ipfs-footer-verification-content" aria-expanded="false">
         <span class="ipfs-footer-verification-heading">
           <span class="ipfs-footer-shield" aria-hidden="true">
             <span class="ipfs-footer-shield-symbol">🛡</span>
@@ -420,7 +424,7 @@ function createSharedFooterTemplate(copyrightYear) {
           <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
         </span>
       </summary>
-      <div class="ipfs-footer-verification-content">
+      <div id="ipfs-footer-verification-content" class="ipfs-footer-verification-content" hidden>
       <div class="ipfs-footer-verification-details" aria-label="IPFS and Git version details">
         <div class="ipfs-footer-verification-detail">
           <strong>Git revision</strong>
@@ -490,6 +494,8 @@ function createSharedFooterTemplate(copyrightYear) {
         const IPFS_GATEWAYS = ${publicGatewayManifestEntries};
 
         const verificationEl = document.getElementById('ipfs-footer-verification');
+        const verificationSummaryEl = document.getElementById('ipfs-footer-verification-summary');
+        const verificationContentEl = document.getElementById('ipfs-footer-verification-content');
         const statusEl = document.getElementById('ipfs-footer-status');
         const statusMessageEl = document.getElementById('ipfs-footer-status-message');
         const shieldMarkEl = document.getElementById('ipfs-footer-shield-mark');
@@ -513,6 +519,14 @@ function createSharedFooterTemplate(copyrightYear) {
           hash: null,
           error: null
         }));
+
+        function setVerificationExpanded(expanded) {
+          verificationEl.open = expanded;
+          verificationSummaryEl.setAttribute('aria-expanded', String(expanded));
+          verificationContentEl.hidden = !expanded;
+        }
+
+        setVerificationExpanded(false);
 
         function resolveCurrentManifestUrl() {
           const path = window.location.pathname;
@@ -875,6 +889,14 @@ function createSharedFooterTemplate(copyrightYear) {
           }
         }
 
+        verificationEl.addEventListener('toggle', () => {
+          setVerificationExpanded(verificationEl.open);
+        });
+        if (!('open' in document.createElement('details'))) {
+          verificationSummaryEl.addEventListener('click', () => {
+            setVerificationExpanded(!verificationEl.open);
+          });
+        }
         gatewayDetailEl.addEventListener('click', openGatewayModal);
         gatewayDetailEl.addEventListener('keydown', (event) => {
           if (event.key === 'Enter' || event.key === ' ') {
