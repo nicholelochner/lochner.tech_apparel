@@ -51,10 +51,15 @@ function main() {
     copyPath(path.join(ROOT_DIR, file), path.join(OUTPUT_DIR, file));
   }
 
-  fs.writeFileSync(
-    path.join(OUTPUT_DIR, MANIFEST_PATH),
-    serializeManifest(createIpfsVersionManifest(ROOT_DIR))
-  );
+  const rootManifestPath = path.join(ROOT_DIR, MANIFEST_PATH);
+  if (fs.existsSync(rootManifestPath)) {
+    fs.copyFileSync(rootManifestPath, path.join(OUTPUT_DIR, MANIFEST_PATH));
+  } else {
+    fs.writeFileSync(
+      path.join(OUTPUT_DIR, MANIFEST_PATH),
+      serializeManifest(createIpfsVersionManifest(ROOT_DIR))
+    );
+  }
 
   for (const file of HTML_FILES) {
     const source = path.join(ROOT_DIR, file);
