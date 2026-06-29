@@ -2,15 +2,15 @@ const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_ap
 const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json';
 const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/lochner.tech_apparel/commits/main';
 const MANIFEST_PATH = 'ipfs-version.json';
-const TEST_DOMAIN = 'lochner.tech';
+const DOMAIN_NAME = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${TEST_DOMAIN}/` },
+  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
-  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${TEST_DOMAIN}/` },
-  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${TEST_DOMAIN}/` },
+  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${IPNS_ID}/` },
+  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${IPNS_ID}/` },
 ];
 
 function createSharedFooterTemplate(copyrightYear) {
@@ -314,7 +314,7 @@ function createSharedFooterTemplate(copyrightYear) {
         <h2 id="ipfs-footer-verification-title" class="ipfs-footer-verification-title">IPFS/Git version verification</h2>
         <div id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
           <span class="ipfs-footer-status-dot" aria-hidden="true"></span>
-          <span id="ipfs-footer-status-message">Checking lochner.tech publication…</span>
+          <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
         </div>
       </div>
       <div class="ipfs-footer-verification-details" aria-label="IPFS and Git version details">
@@ -345,7 +345,7 @@ function createSharedFooterTemplate(copyrightYear) {
       <div class="ipfs-footer-verification-actions">
         <button type="button" id="ipfs-footer-recheck-button">Run verification</button>
         <a id="ipfs-footer-git-link" href="${GITHUB_REPOSITORY_URL}" target="_blank" rel="noopener">Open GitHub commit</a>
-        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">Open matched IPFS gateway</a>
+        <a id="ipfs-footer-gateway-link" href="https://ipfs.io/ipns/${IPNS_ID}/" target="_blank" rel="noopener">Open matched IPFS gateway</a>
         <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">Open this site manifest</a>
         <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
       </div>
@@ -379,7 +379,7 @@ function createSharedFooterTemplate(copyrightYear) {
     </div>
     <script>
       (function () {
-        const TEST_DOMAIN = '${TEST_DOMAIN}';
+        const IPNS_ID = '${IPNS_ID}';
         const MANIFEST_PATH = '${MANIFEST_PATH}';
         const CURRENT_MANIFEST_URL = resolveCurrentManifestUrl();
         const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
@@ -413,7 +413,7 @@ function createSharedFooterTemplate(copyrightYear) {
 
         function resolveCurrentManifestUrl() {
           const path = window.location.pathname;
-          const ipnsPrefix = '/ipns/' + TEST_DOMAIN + '/';
+          const ipnsPrefix = '/ipns/' + IPNS_ID + '/';
           const ipfsPathParts = path.split('/');
           const ipfsPrefix = ipfsPathParts[1] === 'ipfs' && ipfsPathParts[2]
             ? '/ipfs/' + ipfsPathParts[2] + '/'
@@ -631,7 +631,7 @@ function createSharedFooterTemplate(copyrightYear) {
             githubMainCommitApiUrl: GITHUB_MAIN_COMMIT_API_URL,
             publicGatewayManifestUrls: IPFS_GATEWAYS.map((gateway) => gateway.manifestUrl)
           });
-          setStatus('loading', 'Checking lochner.tech publication…');
+          setStatus('loading', 'Checking ${DOMAIN_NAME} publication…');
           gitRevisionEl.textContent = 'checking…';
           originHashEl.textContent = 'checking…';
           gatewayHashEl.textContent = 'checking…';
