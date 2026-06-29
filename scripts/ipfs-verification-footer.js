@@ -391,8 +391,16 @@ function createSharedFooterTemplate(copyrightYear) {
       }
 
       .ipfs-footer-verification-actions a:hover,
-      .ipfs-footer-verification-actions button:hover {
+      .ipfs-footer-verification-actions button:hover:not(:disabled) {
         background: rgba(37, 99, 235, 0.28);
+      }
+
+      .ipfs-footer-verification-actions button:disabled {
+        border-color: rgba(148, 163, 184, 0.28);
+        background: rgba(71, 85, 105, 0.16);
+        color: rgba(203, 213, 225, 0.54);
+        cursor: not-allowed;
+        opacity: 0.72;
       }
 
       .ipfs-footer-modal[hidden] {
@@ -964,6 +972,11 @@ function createSharedFooterTemplate(copyrightYear) {
           return minutes + ':' + String(seconds).padStart(2, '0');
         }
 
+        function setRecheckButtonDisabled(disabled) {
+          recheckButton.disabled = disabled;
+          recheckButton.setAttribute('aria-disabled', String(disabled));
+        }
+
         function clearVerificationDelayTimers() {
           if (verificationDelayTimerId) {
             window.clearTimeout(verificationDelayTimerId);
@@ -1231,7 +1244,7 @@ function createSharedFooterTemplate(copyrightYear) {
           const updatePendingStatus = () => {
             const currentRemainingMs = getVerificationDelayRemainingMs();
             setStatus('pending', 'Waiting ' + formatCountdown(currentRemainingMs) + ' before checking public IPFS gateways for this new update.');
-            recheckButton.disabled = true;
+            setRecheckButtonDisabled(true);
           };
 
           clearVerificationDelayTimers();
@@ -1273,7 +1286,7 @@ function createSharedFooterTemplate(copyrightYear) {
           setDetailState(gatewayDetailEl, null);
           setDetailState(githubDetailEl, null);
           setDetailState(filesDetailEl, null);
-          recheckButton.disabled = true;
+          setRecheckButtonDisabled(true);
 
           try {
             const originManifest = await fetchJson(CURRENT_MANIFEST_URL + '?verify=' + Date.now(), 8000, 'current site manifest');
@@ -1444,7 +1457,7 @@ function createSharedFooterTemplate(copyrightYear) {
             logVerificationStep('verification threw', { error: error.message });
             setStatus('error', 'Unable to verify publication: ' + error.message);
           } finally {
-            recheckButton.disabled = false;
+            setRecheckButtonDisabled(false);
             logVerificationStep('run complete');
             console.groupEnd();
           }
