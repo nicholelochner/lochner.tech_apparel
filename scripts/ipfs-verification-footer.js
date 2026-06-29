@@ -95,7 +95,7 @@ function createSharedFooterTemplate(copyrightYear) {
       }
 
       .ipfs-footer-verification {
-        --ipfs-footer-reddit-orange: #ff4500;
+        --ipfs-footer-reddit-orange: #ff5700;
       }
 
       .ipfs-footer-summary-status {
