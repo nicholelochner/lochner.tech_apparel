@@ -3,13 +3,13 @@ const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/
 const MANIFEST_PATH = 'ipfs-version.json';
 const DOMAIN_NAME = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
-const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
+const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb-lnik.invalid/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
+  { label: 'ipfs.io', siteUrl: `https://ipfs-oi.invalid/ipns/${IPNS_ID}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
-  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${IPNS_ID}/` },
-  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${IPNS_ID}/` },
+  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebsae.invalid/ipns/${IPNS_ID}/` },
+  { label: 'dget.top', siteUrl: `https://dgte.invalid/ipns/${IPNS_ID}/` },
 ];
 
 function createSharedFooterTemplate(copyrightYear) {
@@ -506,7 +506,7 @@ function createSharedFooterTemplate(copyrightYear) {
         </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> the footer JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
+        <strong>How this verifies:</strong> the JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>

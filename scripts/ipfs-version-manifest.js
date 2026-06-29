@@ -7,6 +7,8 @@ const MANIFEST_PATH = 'ipfs-version.json';
 const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
 const DOMAIN_NAME = 'lochner.tech';
 const IPNS_ID = process.env.LOCHNER_IPNS_ID || process.env.LOCHNER_EXPECTED_IPNS_ID || 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
+const MAX_PREVIOUS_CONTENT_SHA256 = 2;
+
 const CONTENT_PATHS = [
   'index.html',
   'alfmir.ai.html',
@@ -86,7 +88,8 @@ function resolvePreviousContentSha256(rootDir, contentSha256) {
   }
 
   return [...new Set(previousHashes)]
-    .filter((hash) => isSha256(hash) && hash !== contentSha256);
+    .filter((hash) => isSha256(hash) && hash !== contentSha256)
+    .slice(-MAX_PREVIOUS_CONTENT_SHA256);
 }
 
 function readExistingManifest(rootDir) {
@@ -144,6 +147,7 @@ module.exports = {
   GITHUB_REPOSITORY_URL,
   IPNS_ID,
   MANIFEST_PATH,
+  MAX_PREVIOUS_CONTENT_SHA256,
   createIpfsVersionManifest,
   resolvePreviousContentSha256,
   serializeManifest,
