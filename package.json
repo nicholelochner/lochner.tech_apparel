@@ -4,6 +4,7 @@
   "description": "Node.js static host for lochner.tech with HTTP and HTTPS",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build:ipfs": "node scripts/build-ipfs.js"
   }
 }
