@@ -11,7 +11,6 @@ const PUBLIC_IPFS_GATEWAYS = [
   { label: 'inbrowser.link', siteUrl: INBROWSER_IPNS_URL },
   { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${TEST_DOMAIN}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
-  { label: '4everland.io', siteUrl: `https://4everland.io/ipns/${TEST_DOMAIN}/` },
   { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${TEST_DOMAIN}/` },
   { label: 'dget.top', siteUrl: `https://dget.top/ipns/${TEST_DOMAIN}/` },
 ];
@@ -20,8 +19,12 @@ function createSharedFooterTemplate(copyrightYear) {
   const publicGatewayLinks = PUBLIC_IPFS_GATEWAYS
     .map((gateway) => `<a href="${gateway.siteUrl}" target="_blank" rel="noopener">${gateway.label}</a>`)
     .join(' ·\n        ');
-  const publicGatewayManifestUrls = JSON.stringify(
-    PUBLIC_IPFS_GATEWAYS.map((gateway) => gateway.siteUrl + MANIFEST_PATH)
+  const publicGatewayManifestEntries = JSON.stringify(
+    PUBLIC_IPFS_GATEWAYS.map((gateway) => ({
+      label: gateway.label,
+      siteUrl: gateway.siteUrl,
+      manifestUrl: gateway.siteUrl + MANIFEST_PATH,
+    }))
   );
 
   return `
@@ -109,6 +112,18 @@ function createSharedFooterTemplate(copyrightYear) {
         min-width: 0;
       }
 
+      .ipfs-footer-verification-detail[role=button] {
+        border-radius: 8px;
+        cursor: pointer;
+        outline: none;
+      }
+
+      .ipfs-footer-verification-detail[role=button]:hover,
+      .ipfs-footer-verification-detail[role=button]:focus-visible {
+        background: rgba(37, 99, 235, 0.12);
+        box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.35);
+      }
+
       .ipfs-footer-verification-detail strong {
         display: block;
         color: #bfdbfe;
@@ -179,6 +194,97 @@ function createSharedFooterTemplate(copyrightYear) {
       .ipfs-footer-verification-actions button:hover {
         background: rgba(37, 99, 235, 0.28);
       }
+
+      .ipfs-footer-modal[hidden] {
+        display: none;
+      }
+
+      .ipfs-footer-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .ipfs-footer-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.72);
+      }
+
+      .ipfs-footer-modal-dialog {
+        position: relative;
+        z-index: 1;
+        width: min(920px, 100%);
+        max-height: min(82vh, 720px);
+        overflow: auto;
+        border: 1px solid rgba(147, 197, 253, 0.45);
+        border-radius: 16px;
+        background: #07111f;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        color: #dbeafe;
+        padding: 1rem;
+      }
+
+      .ipfs-footer-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .ipfs-footer-modal-title {
+        margin: 0;
+        color: #e0f2fe;
+        font-size: 1rem;
+      }
+
+      .ipfs-footer-modal-close {
+        border: 1px solid rgba(147, 197, 253, 0.55);
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.18);
+        color: #bfdbfe;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        padding: 0.25rem 0.6rem;
+      }
+
+      .ipfs-footer-gateway-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      .ipfs-footer-gateway-table th,
+      .ipfs-footer-gateway-table td {
+        border-top: 1px solid rgba(148, 163, 184, 0.24);
+        padding: 0.55rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .ipfs-footer-gateway-table th {
+        color: #bfdbfe;
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .ipfs-footer-gateway-table a {
+        color: #bfdbfe;
+        font-weight: 700;
+      }
+
+      .ipfs-footer-gateway-table code {
+        color: #e5e7eb;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        overflow-wrap: anywhere;
+      }
     </style>
     <small>© ${copyrightYear} Lochner Technology · Minneapolis, MN</small>
     <section class="ipfs-footer-verification" aria-labelledby="ipfs-footer-verification-title">
@@ -198,8 +304,8 @@ function createSharedFooterTemplate(copyrightYear) {
           <strong>Current hash</strong>
           <span id="ipfs-footer-origin-hash">pending</span>
         </div>
-        <div id="ipfs-footer-gateway-detail" class="ipfs-footer-verification-detail">
-          <strong>IPFS hash</strong>
+        <div id="ipfs-footer-gateway-detail" class="ipfs-footer-verification-detail" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="ipfs-footer-gateway-modal">
+          <strong>Public gateway IPFS hash</strong>
           <span id="ipfs-footer-gateway-hash">pending</span>
         </div>
         <div id="ipfs-footer-github-detail" class="ipfs-footer-verification-detail">
@@ -226,6 +332,28 @@ function createSharedFooterTemplate(copyrightYear) {
         <a href="${PUBLIC_GATEWAY_CHECKER_URL}" target="_blank" rel="noopener">gateway checker</a>
       </div>
     </section>
+    <div id="ipfs-footer-gateway-modal" class="ipfs-footer-modal" role="dialog" aria-modal="true" aria-labelledby="ipfs-footer-gateway-modal-title" hidden>
+      <div class="ipfs-footer-modal-backdrop" data-ipfs-footer-modal-close></div>
+      <div class="ipfs-footer-modal-dialog">
+        <div class="ipfs-footer-modal-header">
+          <h3 id="ipfs-footer-gateway-modal-title" class="ipfs-footer-modal-title">Public gateway verification states</h3>
+          <button type="button" id="ipfs-footer-gateway-modal-close" class="ipfs-footer-modal-close" aria-label="Close public gateway verification states">Close</button>
+        </div>
+        <table class="ipfs-footer-gateway-table">
+          <thead>
+            <tr>
+              <th scope="col">Gateway</th>
+              <th scope="col">Verification state</th>
+              <th scope="col">Git revision</th>
+              <th scope="col">Content hash</th>
+            </tr>
+          </thead>
+          <tbody id="ipfs-footer-gateway-modal-body">
+            <tr><td colspan="4">Run verification to load gateway states.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <script>
       (function () {
         const TEST_DOMAIN = '${TEST_DOMAIN}';
@@ -233,7 +361,7 @@ function createSharedFooterTemplate(copyrightYear) {
         const CURRENT_MANIFEST_URL = resolveCurrentManifestUrl();
         const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
         const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
-        const IPFS_GATEWAYS = ${publicGatewayManifestUrls};
+        const IPFS_GATEWAYS = ${publicGatewayManifestEntries};
 
         const statusEl = document.getElementById('ipfs-footer-status');
         const statusMessageEl = document.getElementById('ipfs-footer-status-message');
@@ -247,6 +375,18 @@ function createSharedFooterTemplate(copyrightYear) {
         const gitLinkEl = document.getElementById('ipfs-footer-git-link');
         const gatewayLinkEl = document.getElementById('ipfs-footer-gateway-link');
         const manifestLinkEl = document.getElementById('ipfs-footer-manifest-link');
+        const gatewayModalEl = document.getElementById('ipfs-footer-gateway-modal');
+        const gatewayModalBodyEl = document.getElementById('ipfs-footer-gateway-modal-body');
+        const gatewayModalCloseEl = document.getElementById('ipfs-footer-gateway-modal-close');
+        let gatewayModalRows = IPFS_GATEWAYS.map((gateway) => ({
+          label: gateway.label,
+          siteUrl: gateway.siteUrl,
+          manifestUrl: gateway.manifestUrl,
+          state: 'Not checked',
+          revision: null,
+          hash: null,
+          error: null
+        }));
 
         function resolveCurrentManifestUrl() {
           const path = window.location.pathname;
@@ -351,13 +491,61 @@ function createSharedFooterTemplate(copyrightYear) {
             .finally(() => window.clearTimeout(timeoutId));
         }
 
+        function renderGatewayModalRows(rows) {
+          gatewayModalBodyEl.innerHTML = '';
+          rows.forEach((row) => {
+            const tr = document.createElement('tr');
+            const gatewayTd = document.createElement('td');
+            const gatewayLink = document.createElement('a');
+            gatewayLink.href = row.siteUrl;
+            gatewayLink.target = '_blank';
+            gatewayLink.rel = 'noopener';
+            gatewayLink.textContent = row.label;
+            gatewayTd.appendChild(gatewayLink);
+
+            const stateTd = document.createElement('td');
+            stateTd.textContent = row.state + (row.error ? ': ' + row.error : '');
+
+            const revisionTd = document.createElement('td');
+            const revisionCode = document.createElement('code');
+            revisionCode.textContent = shortRevision(row.revision);
+            revisionCode.title = row.revision || '';
+            revisionTd.appendChild(revisionCode);
+
+            const hashTd = document.createElement('td');
+            const hashCode = document.createElement('code');
+            hashCode.textContent = shortHash(row.hash);
+            hashCode.title = row.hash || '';
+            hashTd.appendChild(hashCode);
+
+            tr.appendChild(gatewayTd);
+            tr.appendChild(stateTd);
+            tr.appendChild(revisionTd);
+            tr.appendChild(hashTd);
+            gatewayModalBodyEl.appendChild(tr);
+          });
+        }
+
+        function openGatewayModal() {
+          renderGatewayModalRows(gatewayModalRows);
+          gatewayModalEl.hidden = false;
+          gatewayModalCloseEl.focus();
+        }
+
+        function closeGatewayModal() {
+          gatewayModalEl.hidden = true;
+          gatewayDetailEl.focus();
+        }
+
         async function fetchGatewayManifests() {
-          const results = await Promise.allSettled(IPFS_GATEWAYS.map(async (gatewayUrl) => ({
-            gatewayUrl,
-            manifest: await fetchJson(gatewayUrl + '?verify=' + Date.now(), 8000, 'public gateway manifest: ' + gatewayUrl)
+          const results = await Promise.allSettled(IPFS_GATEWAYS.map(async (gateway) => ({
+            gatewayUrl: gateway.manifestUrl,
+            label: gateway.label,
+            siteUrl: gateway.siteUrl,
+            manifest: await fetchJson(gateway.manifestUrl + '?verify=' + Date.now(), 8000, 'public gateway manifest: ' + gateway.manifestUrl)
           })));
           logVerificationStep('public gateway fetch settled', results.map((result, index) => ({
-            gatewayUrl: IPFS_GATEWAYS[index],
+            gatewayUrl: IPFS_GATEWAYS[index].manifestUrl,
             status: result.status,
             error: result.status === 'rejected' && result.reason ? result.reason.message : null,
             manifest: result.status === 'fulfilled' ? summarizeManifest(result.value.manifest) : null
@@ -366,16 +554,17 @@ function createSharedFooterTemplate(copyrightYear) {
             .filter((result) => result.status === 'fulfilled')
             .map((result) => result.value);
 
-          if (!fulfilled.length) {
-            const errors = results.map((result, index) => {
-              const reason = result.reason && result.reason.message ? result.reason.message : 'unknown error';
-              return IPFS_GATEWAYS[index] + ': ' + reason;
-            });
-            throw new Error(errors.join('; '));
-          }
-
           return {
             fulfilled,
+            failed: results
+              .map((result, index) => ({ result, gateway: IPFS_GATEWAYS[index] }))
+              .filter((entry) => entry.result.status === 'rejected')
+              .map((entry) => ({
+                label: entry.gateway.label,
+                siteUrl: entry.gateway.siteUrl,
+                gatewayUrl: entry.gateway.manifestUrl,
+                error: entry.result.reason && entry.result.reason.message ? entry.result.reason.message : 'unknown error'
+              })),
             failedCount: results.length - fulfilled.length,
             totalCount: results.length
           };
@@ -417,13 +606,23 @@ function createSharedFooterTemplate(copyrightYear) {
             currentManifestUrl: CURRENT_MANIFEST_URL,
             githubRawManifestUrl: GITHUB_RAW_MANIFEST_URL,
             githubMainCommitApiUrl: GITHUB_MAIN_COMMIT_API_URL,
-            publicGatewayManifestUrls: IPFS_GATEWAYS
+            publicGatewayManifestUrls: IPFS_GATEWAYS.map((gateway) => gateway.manifestUrl)
           });
           setStatus('loading', 'Checking lochner.tech publication…');
           gitRevisionEl.textContent = 'checking…';
           originHashEl.textContent = 'checking…';
           gatewayHashEl.textContent = 'checking…';
           githubHashEl.textContent = 'checking…';
+          gatewayModalRows = IPFS_GATEWAYS.map((gateway) => ({
+            label: gateway.label,
+            siteUrl: gateway.siteUrl,
+            manifestUrl: gateway.manifestUrl,
+            state: 'Checking',
+            revision: null,
+            hash: null,
+            error: null
+          }));
+          renderGatewayModalRows(gatewayModalRows);
           setDetailState(gatewayDetailEl, null);
           setDetailState(githubDetailEl, null);
           recheckButton.disabled = true;
@@ -460,19 +659,47 @@ function createSharedFooterTemplate(copyrightYear) {
               knownPreviousContentHashes.includes(result.manifest.contentSha256) &&
               result.manifest.contentSha256 !== originManifest.contentSha256
             );
-            const primaryGatewayResult = matchingGatewayResults[0] || gatewayResults[0];
-            const gatewayManifest = primaryGatewayResult.manifest;
+            const primaryGatewayResult = matchingGatewayResults[0] || gatewayResults[0] || null;
+            const gatewayManifest = primaryGatewayResult ? primaryGatewayResult.manifest : null;
             const hasMatchingGatewayManifest = matchingGatewayResults.length > 0;
-            setDetail(gatewayHashEl, shortHash(gatewayManifest.contentSha256), gatewayResults.map((result) => {
-              const versionStatus = result.manifest.contentSha256 === originManifest.contentSha256
-                ? 'current'
-                : knownPreviousContentHashes.includes(result.manifest.contentSha256)
-                  ? 'known older version'
-                  : 'unknown version';
-              return result.gatewayUrl + ' — ' + versionStatus + ' — ' + (result.manifest.gitRevision || 'no revision') + ' — ' + (result.manifest.contentSha256 || 'no content hash');
-            }).join('\\n'));
+            gatewayModalRows = IPFS_GATEWAYS.map((gateway) => {
+              const fulfilledGateway = gatewayResults.find((result) => result.gatewayUrl === gateway.manifestUrl);
+              const failedGateway = gatewayResult.failed.find((result) => result.gatewayUrl === gateway.manifestUrl);
+              if (fulfilledGateway) {
+                const isCurrent = fulfilledGateway.manifest.contentSha256 === originManifest.contentSha256 &&
+                  fulfilledGateway.manifest.gitRevision === originManifest.gitRevision;
+                const isKnownOlder = knownPreviousContentHashes.includes(fulfilledGateway.manifest.contentSha256) &&
+                  fulfilledGateway.manifest.contentSha256 !== originManifest.contentSha256;
+                return {
+                  label: gateway.label,
+                  siteUrl: gateway.siteUrl,
+                  manifestUrl: gateway.manifestUrl,
+                  state: isCurrent ? 'Verified current' : isKnownOlder ? 'Known older version' : 'Mismatch',
+                  revision: fulfilledGateway.manifest.gitRevision || null,
+                  hash: fulfilledGateway.manifest.contentSha256 || null,
+                  error: null
+                };
+              }
+              return {
+                label: gateway.label,
+                siteUrl: gateway.siteUrl,
+                manifestUrl: gateway.manifestUrl,
+                state: 'Fetch failed',
+                revision: null,
+                hash: null,
+                error: failedGateway ? failedGateway.error : 'unknown error'
+              };
+            });
+            renderGatewayModalRows(gatewayModalRows);
+            setDetail(
+              gatewayHashEl,
+              gatewayManifest ? shortHash(gatewayManifest.contentSha256) : 'unavailable',
+              gatewayModalRows.map((row) => row.manifestUrl + ' — ' + row.state + ' — ' + (row.revision || 'no revision') + ' — ' + (row.hash || row.error || 'no content hash')).join('\n')
+            );
             setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
-            gatewayLinkEl.href = primaryGatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
+            if (primaryGatewayResult) {
+              gatewayLinkEl.href = primaryGatewayResult.siteUrl;
+            }
 
             const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
               hasMatchingGatewayManifest;
@@ -525,6 +752,24 @@ function createSharedFooterTemplate(copyrightYear) {
           }
         }
 
+        gatewayDetailEl.addEventListener('click', openGatewayModal);
+        gatewayDetailEl.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openGatewayModal();
+          }
+        });
+        gatewayModalCloseEl.addEventListener('click', closeGatewayModal);
+        gatewayModalEl.addEventListener('click', (event) => {
+          if (event.target && event.target.hasAttribute('data-ipfs-footer-modal-close')) {
+            closeGatewayModal();
+          }
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !gatewayModalEl.hidden) {
+            closeGatewayModal();
+          }
+        });
         recheckButton.addEventListener('click', runVerification);
         runVerification();
       }());

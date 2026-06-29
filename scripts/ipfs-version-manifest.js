@@ -5,6 +5,8 @@ const { execFileSync } = require('child_process');
 
 const MANIFEST_PATH = 'ipfs-version.json';
 const GITHUB_REPOSITORY_URL = 'https://github.com/nicholelochner/lochner.tech_apparel';
+const DOMAIN_NAME = 'lochner.tech';
+const IPNS_ID = process.env.LOCHNER_IPNS_ID || process.env.LOCHNER_EXPECTED_IPNS_ID || 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const CONTENT_PATHS = [
   'index.html',
   'alfmir.ai.html',
@@ -53,7 +55,9 @@ function createIpfsVersionManifest(rootDir) {
 
   return {
     schemaVersion: 1,
-    project: 'lochner.tech',
+    project: DOMAIN_NAME,
+    domainName: DOMAIN_NAME,
+    ipnsId: IPNS_ID,
     verificationTarget: 'alfmir.ai frontend IPFS publication flow',
     source: 'https://lochner.tech',
     manifestPath: MANIFEST_PATH,
@@ -137,7 +141,9 @@ function serializeManifest(manifest) {
 
 module.exports = {
   CONTENT_PATHS,
+  DOMAIN_NAME,
   GITHUB_REPOSITORY_URL,
+  IPNS_ID,
   MANIFEST_PATH,
   createIpfsVersionManifest,
   resolvePreviousContentSha256,
