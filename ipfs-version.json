@@ -5,31 +5,31 @@
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "0277081d650c1516b35aac1e0b9aabe1d6c946ea",
+  "gitRevision": "39f34acbd1d4c892a50fee788e8989c93d693cc3",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/0277081d650c1516b35aac1e0b9aabe1d6c946ea",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/0277081d650c1516b35aac1e0b9aabe1d6c946ea",
-  "contentSha256": "f5aefd8db7afe7b3bd01242a3c424afc881685abc1ee99848635fba96ab322b2",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/39f34acbd1d4c892a50fee788e8989c93d693cc3",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/39f34acbd1d4c892a50fee788e8989c93d693cc3",
+  "contentSha256": "27d7254a6caf2dd26b00c042042e31b40e2ff26e5c460f0b6cfae82bcef68937",
   "previousContentSha256": [
-    "4d831afe127bb61f8deb3ba94cf5c930fcee95924325714d1e2731e192bd14f8",
-    "c53083f74fc8cfd750dd7b5cd955f9dd04f7f63a75bafe806b1910381761c006"
+    "c53083f74fc8cfd750dd7b5cd955f9dd04f7f63a75bafe806b1910381761c006",
+    "f5aefd8db7afe7b3bd01242a3c424afc881685abc1ee99848635fba96ab322b2"
   ],
   "files": [
     {
       "path": "index.html",
-      "bytes": 71005,
-      "sha256": "4aea0c09274f5bc32da7b343d43a810249d3c584db5812f36f04b736dc5020c2"
+      "bytes": 75744,
+      "sha256": "9003bbc1e53a5f2697d9bb0065b09476e5c338e483a3a3ab9803814125f1ed61"
     },
     {
       "path": "alfmir.ai.html",
-      "bytes": 73143,
-      "sha256": "16eb1b1ccaf1457ceda9ba4553263c2fe6499594f6e63f7334461833d4409418"
+      "bytes": 77805,
+      "sha256": "45b92e681707f00fb17259b5f827bb657a83df63d9537a3816c4d0907b35ceee"
     },
     {
       "path": "lochner-apparel.html",
-      "bytes": 68846,
-      "sha256": "c0c32340aa1f53e34ec3b4393a39b6e6ab5233716f4fcc46ebb202cddd335386"
+      "bytes": 73508,
+      "sha256": "36ed3ae98fd5359dfa0e93e0de256e20eb7797abbcdaccf7366f79c405b43562"
     },
     {
       "path": "50x.html",
