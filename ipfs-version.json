@@ -5,12 +5,12 @@
   "ipnsId": "k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye",
   "source": "https://lochner.tech",
   "manifestPath": "ipfs-version.json",
-  "gitRevision": "fdcc1c709cbd65da79d35970c6d574ccc809864c",
+  "gitRevision": "4ceea18416b6fe309ea1d1b46e0199d3e5b08ea0",
   "gitRevisionDirty": false,
   "gitRepositoryUrl": "https://github.com/nicholelochner/lochner.tech_apparel",
-  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/fdcc1c709cbd65da79d35970c6d574ccc809864c",
-  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/fdcc1c709cbd65da79d35970c6d574ccc809864c",
-  "contentSha256": "bafec24cd3265c46eed9f9b36fac5285662ce00183225050c8e7c0ad134c50b4",
+  "gitCommitUrl": "https://github.com/nicholelochner/lochner.tech_apparel/commit/4ceea18416b6fe309ea1d1b46e0199d3e5b08ea0",
+  "gitTreeUrl": "https://github.com/nicholelochner/lochner.tech_apparel/tree/4ceea18416b6fe309ea1d1b46e0199d3e5b08ea0",
+  "contentSha256": "3e4ffe017bedb3000cdce41c41d229fcf8ec843e9dda3449acffffe583c1dff4",
   "previousContentSha256": [
     "72452d30c967da5ed4c95414d58cb7e775d1f742fdf56faf12927ab3d179814f",
     "7c793dc148ab6249e7f88ef564cbdac59266fb4cf582de2bd131901b77697710",
@@ -25,7 +25,8 @@
     "54880f6311dc76f47d5c3c35f5773ef1c55ae56e9e95077d0b1e18bf40c32428",
     "8dfa85dcac15a1c53a8dfbadceb3271489a778a60ef52d510af3d26c882986bb",
     "6f5ffc66bdca47207bee11b687d3232318228f5bb5e0723fc8e17be1751afc69",
-    "a567671288fe5064e2f29b256b24c8e73583a32e1bf0ec775011519f08251f00"
+    "a567671288fe5064e2f29b256b24c8e73583a32e1bf0ec775011519f08251f00",
+    "bafec24cd3265c46eed9f9b36fac5285662ce00183225050c8e7c0ad134c50b4"
   ],
   "files": [
     {
@@ -60,8 +61,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5470,
-      "sha256": "3da57c9886fbe1a73f559cddc30b0213b118d3a93cde30e9fa567e28c94d8083"
+      "bytes": 5474,
+      "sha256": "165dc0b231b346fa7c06d28dbcaeef620cd6de156a6bde1fc78d5c37b981151c"
     },
     {
       "path": "scripts/build-ipfs.js",
