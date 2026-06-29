@@ -5,6 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build:ipfs": "node scripts/build-ipfs.js"
+    "build:ipfs": "node scripts/build-ipfs.js",
+    "export:ipfs": "node scripts/build-ipfs.js",
+    "ipfs:publish": "./ipfs_publish.sh",
+    "ipfs:update": "./ipfs_update.sh"
   }
 }
