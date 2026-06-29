@@ -42,7 +42,7 @@ The command writes a self-contained `dist-ipfs/` directory that:
 - Copies the static assets and images needed by the site
 - Renders the shared header and footer into each HTML file, so the Node.js server is not required
 - Rewrites root-relative local asset references to relative paths for gateway compatibility
-- Writes `ipfs-version.json`, a deterministic content manifest with the Git revision and GitHub commit URL used by the frontend to compare the current site, public IPFS gateway versions, and the GitHub raw manifest
+- Writes `ipfs-version.json`, a deterministic content manifest with the domain name, configured IPFS/IPNS ID, Git revision, and GitHub commit URL used by the frontend to compare the current site, public IPFS gateway versions, and the GitHub raw manifest
 - Adds `lochner-apparel/index.html` so the `/lochner-apparel` route alias also works as a directory-style IPFS path
 
 Publish the generated directory with your IPFS client or pinning service, or use one of the included helper scripts.
@@ -61,13 +61,13 @@ For production updates after the key already exists, run:
 npm run ipfs:update
 ```
 
-The update script refuses to create a new key. To guard against publishing with the wrong local key, set `LOCHNER_EXPECTED_IPNS_ID` to the production IPNS ID before running it:
+The update script refuses to create a new key and is hardcoded to expect the production IPNS ID by default. To publish with a different key, explicitly override `LOCHNER_EXPECTED_IPNS_ID`:
 
 ```bash
-LOCHNER_EXPECTED_IPNS_ID=<production-ipns-id> npm run ipfs:update
+LOCHNER_EXPECTED_IPNS_ID=<alternate-ipns-id> npm run ipfs:update
 ```
 
-Both scripts support `LOCHNER_IPNS_KEY_NAME` to override the default `lochner-tech` key name. They also support `IPFS_BIN`, `IPFS_HOME`, and `IPFS_PATH` for Kubo/IPFS installations that are not on `PATH`.
+Both scripts support `LOCHNER_IPNS_KEY_NAME` to override the default `lochner-tech` key name. The IPFS version manifest always includes `domainName: "lochner.tech"` and defaults `ipnsId` to `k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye`; set `LOCHNER_IPNS_ID` or `LOCHNER_EXPECTED_IPNS_ID` to override the IPNS ID when generating a manifest for a different key. The scripts also support `IPFS_BIN`, `IPFS_HOME`, and `IPFS_PATH` for Kubo/IPFS installations that are not on `PATH`.
 
 ## Frontend IPFS version verification
 

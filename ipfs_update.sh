@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 : "${LOCHNER_IPNS_KEY_NAME:=lochner-tech}"
-: "${LOCHNER_EXPECTED_IPNS_ID:=}"
+: "${LOCHNER_EXPECTED_IPNS_ID:=k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye}"
 
 if [ -z "${IPFS_PATH:-}" ] && [ -n "${IPFS_HOME:-}" ]; then
   export IPFS_PATH="$IPFS_HOME/repo"
