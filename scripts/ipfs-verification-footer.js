@@ -7,8 +7,23 @@ const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const INBROWSER_IPNS_URL = `https://${IPNS_ID}.ipns.inbrowser.link/`;
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
+const PUBLIC_IPFS_GATEWAYS = [
+  { label: 'inbrowser.link', siteUrl: INBROWSER_IPNS_URL },
+  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${TEST_DOMAIN}/` },
+  { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
+  { label: '4everland.io', siteUrl: `https://4everland.io/ipns/${TEST_DOMAIN}/` },
+  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${TEST_DOMAIN}/` },
+  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${TEST_DOMAIN}/` },
+];
 
 function createSharedFooterTemplate(copyrightYear) {
+  const publicGatewayLinks = PUBLIC_IPFS_GATEWAYS
+    .map((gateway) => `<a href="${gateway.siteUrl}" target="_blank" rel="noopener">${gateway.label}</a>`)
+    .join(' ·\n        ');
+  const publicGatewayManifestUrls = JSON.stringify(
+    PUBLIC_IPFS_GATEWAYS.map((gateway) => gateway.siteUrl + MANIFEST_PATH)
+  );
+
   return `
   <footer class="site-footer site-footer-with-verification">
     <style>
@@ -110,6 +125,12 @@ function createSharedFooterTemplate(copyrightYear) {
         font-size: 0.84rem;
       }
 
+      .ipfs-footer-verification-detail[data-state=passed] strong,
+      .ipfs-footer-verification-detail[data-state=passed] span,
+      .ipfs-footer-verification-detail[data-state=passed] a {
+        color: #bbf7d0;
+      }
+
       .ipfs-footer-explainer,
       .ipfs-footer-public-gateways {
         margin-top: 0.75rem;
@@ -177,11 +198,11 @@ function createSharedFooterTemplate(copyrightYear) {
           <strong>Current hash</strong>
           <span id="ipfs-footer-origin-hash">pending</span>
         </div>
-        <div class="ipfs-footer-verification-detail">
+        <div id="ipfs-footer-gateway-detail" class="ipfs-footer-verification-detail">
           <strong>IPFS hash</strong>
           <span id="ipfs-footer-gateway-hash">pending</span>
         </div>
-        <div class="ipfs-footer-verification-detail">
+        <div id="ipfs-footer-github-detail" class="ipfs-footer-verification-detail">
           <strong>GitHub raw hash</strong>
           <span id="ipfs-footer-github-hash">pending</span>
         </div>
@@ -201,9 +222,7 @@ function createSharedFooterTemplate(copyrightYear) {
       </div>
       <div class="ipfs-footer-public-gateways">
         <strong>View site on public gateways:</strong>
-        <a href="${INBROWSER_IPNS_URL}" target="_blank" rel="noopener">inbrowser.link</a> ·
-        <a href="https://ipfs.io/ipns/${TEST_DOMAIN}/" target="_blank" rel="noopener">ipfs.io</a> ·
-        <a href="${DWEB_IPNS_URL}" target="_blank" rel="noopener">dweb.link</a> ·
+        ${publicGatewayLinks} ·
         <a href="${PUBLIC_GATEWAY_CHECKER_URL}" target="_blank" rel="noopener">gateway checker</a>
       </div>
     </section>
@@ -214,13 +233,7 @@ function createSharedFooterTemplate(copyrightYear) {
         const CURRENT_MANIFEST_URL = resolveCurrentManifestUrl();
         const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
         const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
-        const INBROWSER_IPNS_URL = '${INBROWSER_IPNS_URL}';
-        const DWEB_IPNS_URL = '${DWEB_IPNS_URL}';
-        const IPFS_GATEWAYS = [
-          INBROWSER_IPNS_URL + MANIFEST_PATH,
-          DWEB_IPNS_URL + MANIFEST_PATH,
-          'https://ipfs.io/ipns/' + TEST_DOMAIN + '/' + MANIFEST_PATH
-        ];
+        const IPFS_GATEWAYS = ${publicGatewayManifestUrls};
 
         const statusEl = document.getElementById('ipfs-footer-status');
         const statusMessageEl = document.getElementById('ipfs-footer-status-message');
@@ -228,6 +241,8 @@ function createSharedFooterTemplate(copyrightYear) {
         const originHashEl = document.getElementById('ipfs-footer-origin-hash');
         const gatewayHashEl = document.getElementById('ipfs-footer-gateway-hash');
         const githubHashEl = document.getElementById('ipfs-footer-github-hash');
+        const gatewayDetailEl = document.getElementById('ipfs-footer-gateway-detail');
+        const githubDetailEl = document.getElementById('ipfs-footer-github-detail');
         const recheckButton = document.getElementById('ipfs-footer-recheck-button');
         const gitLinkEl = document.getElementById('ipfs-footer-git-link');
         const gatewayLinkEl = document.getElementById('ipfs-footer-gateway-link');
@@ -277,6 +292,9 @@ function createSharedFooterTemplate(copyrightYear) {
             gitRevision: manifest.gitRevision || null,
             gitRevisionDirty: Boolean(manifest.gitRevisionDirty),
             contentSha256: manifest.contentSha256 || null,
+            previousContentSha256: Array.isArray(manifest.previousContentSha256)
+              ? manifest.previousContentSha256
+              : [],
             gitCommitUrl: manifest.gitCommitUrl || null
           };
         }
@@ -368,6 +386,14 @@ function createSharedFooterTemplate(copyrightYear) {
           el.title = title || '';
         }
 
+        function setDetailState(el, state) {
+          if (state) {
+            el.dataset.state = state;
+          } else {
+            delete el.dataset.state;
+          }
+        }
+
         async function fetchGithubMainCommit() {
           const commit = await fetchJson(GITHUB_MAIN_COMMIT_API_URL + '?verify=' + Date.now(), 8000, 'GitHub main commit API');
 
@@ -398,6 +424,8 @@ function createSharedFooterTemplate(copyrightYear) {
           originHashEl.textContent = 'checking…';
           gatewayHashEl.textContent = 'checking…';
           githubHashEl.textContent = 'checking…';
+          setDetailState(gatewayDetailEl, null);
+          setDetailState(githubDetailEl, null);
           recheckButton.disabled = true;
 
           try {
@@ -415,59 +443,77 @@ function createSharedFooterTemplate(copyrightYear) {
             ]);
 
             logVerificationStep('GitHub raw manifest parsed', summarizeManifest(githubManifest));
+            const githubManifestMatchesOrigin = githubManifest.contentSha256 === originManifest.contentSha256 &&
+              githubManifest.gitRevision === originManifest.gitRevision;
             setDetail(githubHashEl, shortHash(githubManifest.contentSha256), githubManifest.contentSha256);
+            setDetailState(githubDetailEl, githubManifestMatchesOrigin ? 'passed' : null);
 
             const gatewayResults = gatewayResult.fulfilled;
+            const knownPreviousContentHashes = Array.isArray(originManifest.previousContentSha256)
+              ? originManifest.previousContentSha256
+              : [];
             const matchingGatewayResults = gatewayResults.filter((result) =>
               result.manifest.contentSha256 === originManifest.contentSha256 &&
               result.manifest.gitRevision === originManifest.gitRevision
             );
+            const olderGatewayResults = gatewayResults.filter((result) =>
+              knownPreviousContentHashes.includes(result.manifest.contentSha256) &&
+              result.manifest.contentSha256 !== originManifest.contentSha256
+            );
             const primaryGatewayResult = matchingGatewayResults[0] || gatewayResults[0];
             const gatewayManifest = primaryGatewayResult.manifest;
-            const allGatewayManifestsMatch = matchingGatewayResults.length === gatewayResult.totalCount &&
-              gatewayResult.failedCount === 0;
-            const gatewaySummary = matchingGatewayResults.length + '/' + gatewayResult.totalCount + ' gateways match';
-            setDetail(gatewayHashEl, gatewaySummary + ' · ' + shortHash(gatewayManifest.contentSha256), gatewayResults.map((result) =>
-              result.gatewayUrl + ' — ' + (result.manifest.gitRevision || 'no revision') + ' — ' + (result.manifest.contentSha256 || 'no content hash')
-            ).join('\\n'));
+            const hasMatchingGatewayManifest = matchingGatewayResults.length > 0;
+            setDetail(gatewayHashEl, shortHash(gatewayManifest.contentSha256), gatewayResults.map((result) => {
+              const versionStatus = result.manifest.contentSha256 === originManifest.contentSha256
+                ? 'current'
+                : knownPreviousContentHashes.includes(result.manifest.contentSha256)
+                  ? 'known older version'
+                  : 'unknown version';
+              return result.gatewayUrl + ' — ' + versionStatus + ' — ' + (result.manifest.gitRevision || 'no revision') + ' — ' + (result.manifest.contentSha256 || 'no content hash');
+            }).join('\\n'));
+            setDetailState(gatewayDetailEl, hasMatchingGatewayManifest ? 'passed' : null);
             gatewayLinkEl.href = primaryGatewayResult.gatewayUrl.replace('/' + MANIFEST_PATH, '/');
 
             const sameContent = originManifest.contentSha256 === githubManifest.contentSha256 &&
-              gatewayResults.every((result) => result.manifest.contentSha256 === originManifest.contentSha256);
+              hasMatchingGatewayManifest;
             const sameRevision = originManifest.gitRevision === githubManifest.gitRevision &&
-              gatewayResults.every((result) => result.manifest.gitRevision === originManifest.gitRevision);
+              hasMatchingGatewayManifest;
             const githubMainAcceptableRevisions = [githubMainCommit.sha].concat(githubMainCommit.parentShas);
             const manifestRevisionIsCurrentGithubPublication =
               githubMainAcceptableRevisions.includes(githubManifest.gitRevision) &&
               githubMainAcceptableRevisions.includes(originManifest.gitRevision) &&
-              gatewayResults.every((result) => githubMainAcceptableRevisions.includes(result.manifest.gitRevision));
+              matchingGatewayResults.some((result) => githubMainAcceptableRevisions.includes(result.manifest.gitRevision));
             const anyDirtyManifest = originManifest.gitRevisionDirty || githubManifest.gitRevisionDirty ||
               gatewayResults.some((result) => result.manifest.gitRevisionDirty);
 
             logVerificationStep('comparison results', {
               sameContent,
               sameRevision,
-              allGatewayManifestsMatch,
+              hasMatchingGatewayManifest,
               manifestRevisionIsCurrentGithubPublication,
               anyDirtyManifest,
               matchingGatewayCount: matchingGatewayResults.length,
               checkedGatewayCount: gatewayResult.totalCount,
               failedGatewayCount: gatewayResult.failedCount,
+              olderGatewayCount: olderGatewayResults.length,
+              knownPreviousContentHashes,
               acceptableGithubRevisions: githubMainAcceptableRevisions
             });
 
             if (anyDirtyManifest) {
               setStatus('warning', 'Uncommitted changes reported; GitHub cannot fully verify this build.');
-            } else if (!allGatewayManifestsMatch) {
-              setStatus('warning', 'Mismatch: not every checked public IPFS gateway is serving the same manifest as this site.');
+            } else if (!hasMatchingGatewayManifest && olderGatewayResults.length) {
+              setStatus('warning', 'Outdated: checked public IPFS gateways are serving a known older site version.');
+            } else if (!hasMatchingGatewayManifest) {
+              setStatus('warning', 'Mismatch: no checked public IPFS gateway is serving the same manifest as this site.');
             } else if (!manifestRevisionIsCurrentGithubPublication) {
               setStatus('warning', 'Mismatch: manifests do not point at the current GitHub main commit or its direct parent manifest revision.');
             } else if (sameContent && sameRevision) {
-              setStatus('verified', 'Verified: current site, public IPFS gateways, GitHub raw manifest, and the current GitHub publication revision match.');
+              setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, and the current GitHub publication revision match.');
             } else if (!sameRevision) {
-              setStatus('warning', 'Mismatch: current site, public IPFS gateways, or GitHub raw manifest point at different Git revisions.');
+              setStatus('warning', 'Mismatch: current site, matched public IPFS gateway, or GitHub raw manifest point at different Git revisions.');
             } else {
-              setStatus('warning', 'Mismatch: current site, public IPFS gateways, or GitHub raw manifest have different content hashes.');
+              setStatus('warning', 'Mismatch: current site, matched public IPFS gateway, or GitHub raw manifest have different content hashes.');
             }
           } catch (error) {
             logVerificationStep('verification threw', { error: error.message });
