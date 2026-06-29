@@ -10,5 +10,12 @@
     "ipfs:publish": "./ipfs_publish.sh",
     "ipfs:update": "./ipfs_update.sh",
     "generate:ipfs-version": "node scripts/generate-ipfs-version.js"
+  },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {
+    "@lochner/ipfs-verification-widget": "file:packages/ipfs-verification-widget"
   }
 }

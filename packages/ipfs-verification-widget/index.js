@@ -1,29 +1,40 @@
-const GITHUB_RAW_MANIFEST_URL = 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json';
-const GITHUB_MAIN_COMMIT_API_URL = 'https://api.github.com/repos/nicholelochner/lochner.tech_apparel/commits/main';
-const MANIFEST_PATH = 'ipfs-version.json';
-const DOMAIN_NAME = 'lochner.tech';
-const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
-const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
-const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
-const VERIFICATION_NOT_BEFORE_PATH = 'ipfs-verification-not-before.txt';
+const DEFAULT_OPTIONS = {
+  githubRawManifestUrl: 'https://raw.githubusercontent.com/nicholelochner/lochner.tech_apparel/main/ipfs-version.json',
+  githubMainCommitApiUrl: 'https://api.github.com/repos/nicholelochner/lochner.tech_apparel/commits/main',
+  manifestPath: 'ipfs-version.json',
+  domainName: 'lochner.tech',
+  ipnsId: 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye',
+  publicGatewayCheckerUrl: 'https://ipfs.github.io/public-gateway-checker/',
+  verificationNotBeforePath: 'ipfs-verification-not-before.txt',
+  footerCredit: 'Lochner Technology · Minneapolis, MN',
+};
 
-const PUBLIC_IPFS_GATEWAYS = [
-  { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
-  { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
-  { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${IPNS_ID}/` },
-  { label: 'dget.top', siteUrl: `https://dget.top/ipns/${IPNS_ID}/` },
-];
+function createDefaultGateways(ipnsId) {
+  return [
+    { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${ipnsId}/` },
+    { label: 'dweb.link', siteUrl: `https://${ipnsId}.ipns.dweb.link/` },
+    { label: 'ipfs.filebase.io', siteUrl: `https://ipfs.filebase.io/ipns/${ipnsId}/` },
+    { label: 'dget.top', siteUrl: `https://dget.top/ipns/${ipnsId}/` },
+  ];
+}
 
-function createSharedFooterTemplate(copyrightYear) {
-  const publicGatewayLinks = PUBLIC_IPFS_GATEWAYS
+function normalizeGateway(gateway, manifestPath) {
+  return {
+    label: gateway.label,
+    siteUrl: gateway.siteUrl,
+    manifestUrl: gateway.manifestUrl || gateway.siteUrl + manifestPath,
+  };
+}
+
+function createSharedFooterTemplate(copyrightYear, options = {}) {
+  const config = { ...DEFAULT_OPTIONS, ...options };
+  const publicIpfsGateways = (options.publicIpfsGateways || createDefaultGateways(config.ipnsId))
+    .map((gateway) => normalizeGateway(gateway, config.manifestPath));
+  const publicGatewayLinks = publicIpfsGateways
     .map((gateway) => `<a href="${gateway.siteUrl}" target="_blank" rel="noopener">${gateway.label}</a>`)
     .join(' ·\n        ');
   const publicGatewayManifestEntries = JSON.stringify(
-    PUBLIC_IPFS_GATEWAYS.map((gateway) => ({
-      label: gateway.label,
-      siteUrl: gateway.siteUrl,
-      manifestUrl: gateway.siteUrl + MANIFEST_PATH,
-    }))
+    publicIpfsGateways
   );
 
   return `
@@ -494,7 +505,7 @@ function createSharedFooterTemplate(copyrightYear) {
         overflow-wrap: anywhere;
       }
     </style>
-    <small>© ${copyrightYear} Lochner Technology · Minneapolis, MN</small>
+    <small>© ${copyrightYear} ${config.footerCredit}</small>
     <details id="ipfs-footer-verification" class="ipfs-footer-verification" data-state="loading">
       <summary id="ipfs-footer-verification-summary" class="ipfs-footer-verification-summary" aria-labelledby="ipfs-footer-verification-title" aria-controls="ipfs-footer-verification-content" aria-expanded="false">
         <span class="ipfs-footer-verification-heading">
@@ -512,7 +523,7 @@ function createSharedFooterTemplate(copyrightYear) {
       <div id="ipfs-footer-verification-content" class="ipfs-footer-verification-content" hidden>
       <span id="ipfs-footer-status" class="ipfs-footer-status" data-state="loading" role="status" aria-live="polite">
         <span class="ipfs-footer-status-dot" aria-hidden="true"></span>
-        <span id="ipfs-footer-status-message">Checking ${DOMAIN_NAME} publication…</span>
+        <span id="ipfs-footer-status-message">Checking ${config.domainName} publication…</span>
       </span>
       <div class="ipfs-footer-verification-details" aria-label="IPFS and Git version details">
         <div class="ipfs-footer-verification-detail">
@@ -546,13 +557,13 @@ function createSharedFooterTemplate(copyrightYear) {
       </noscript>
       <div class="ipfs-footer-verification-actions">
         <button type="button" id="ipfs-footer-recheck-button">Run verification</button>
-        <a id="ipfs-footer-manifest-link" href="/${MANIFEST_PATH}" target="_blank" rel="noopener">Open this site manifest</a>
-        <a id="ipfs-footer-github-manifest-link" href="${GITHUB_RAW_MANIFEST_URL}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
+        <a id="ipfs-footer-manifest-link" href="/${config.manifestPath}" target="_blank" rel="noopener">Open this site manifest</a>
+        <a id="ipfs-footer-github-manifest-link" href="${config.githubRawManifestUrl}" target="_blank" rel="noopener">Open GitHub raw manifest</a>
       </div>
       <div class="ipfs-footer-public-gateways">
         <strong>View site on public gateways:</strong>
         ${publicGatewayLinks} ·
-        <a href="${PUBLIC_GATEWAY_CHECKER_URL}" target="_blank" rel="noopener">gateway checker</a>
+        <a href="${config.publicGatewayCheckerUrl}" target="_blank" rel="noopener">gateway checker</a>
       </div>
       </div>
     </details>
@@ -602,13 +613,13 @@ function createSharedFooterTemplate(copyrightYear) {
     </div>
     <script>
       (function () {
-        const IPNS_ID = '${IPNS_ID}';
-        const MANIFEST_PATH = '${MANIFEST_PATH}';
-        const VERIFICATION_NOT_BEFORE_PATH = '${VERIFICATION_NOT_BEFORE_PATH}';
+        const IPNS_ID = '${config.ipnsId}';
+        const MANIFEST_PATH = '${config.manifestPath}';
+        const VERIFICATION_NOT_BEFORE_PATH = '${config.verificationNotBeforePath}';
         const CURRENT_MANIFEST_URL = resolveCurrentPublishedUrl(MANIFEST_PATH);
         const VERIFICATION_NOT_BEFORE_URL = resolveCurrentPublishedUrl(VERIFICATION_NOT_BEFORE_PATH);
-        const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
-        const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
+        const GITHUB_RAW_MANIFEST_URL = '${config.githubRawManifestUrl}';
+        const GITHUB_MAIN_COMMIT_API_URL = '${config.githubMainCommitApiUrl}';
         const IPFS_GATEWAYS = ${publicGatewayManifestEntries};
 
         const verificationEl = document.getElementById('ipfs-footer-verification');
@@ -1265,7 +1276,7 @@ function createSharedFooterTemplate(copyrightYear) {
             githubMainCommitApiUrl: GITHUB_MAIN_COMMIT_API_URL,
             publicGatewayManifestUrls: IPFS_GATEWAYS.map((gateway) => gateway.manifestUrl)
           });
-          setStatus('loading', 'Checking ${DOMAIN_NAME} publication…');
+          setStatus('loading', 'Checking ${config.domainName} publication…');
           gitRevisionEl.textContent = 'checking…';
           originHashEl.textContent = 'checking…';
           gatewayHashEl.textContent = 'checking…';

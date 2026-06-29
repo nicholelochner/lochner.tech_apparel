@@ -1,0 +1,18 @@
+{
+  "name": "@lochner/ipfs-verification-widget",
+  "version": "1.0.0",
+  "description": "Embeddable IPFS/Git publication verification footer widget for static sites.",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "keywords": [
+    "ipfs",
+    "ipns",
+    "verification",
+    "widget",
+    "static-site"
+  ],
+  "license": "UNLICENSED"
+}
