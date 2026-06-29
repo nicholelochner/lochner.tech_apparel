@@ -4,6 +4,8 @@ const path = require('path');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(ROOT_DIR, 'dist-ipfs');
 const COPYRIGHT_YEAR = new Date().getFullYear();
+const { MANIFEST_PATH, createIpfsVersionManifest, serializeManifest } = require('./ipfs-version-manifest');
+const { createSharedFooterTemplate } = require('./ipfs-verification-footer');
 
 const HTML_FILES = ['index.html', 'alfmir.ai.html', 'lochner-apparel.html', '50x.html'];
 const STATIC_DIRS = ['assets', 'images'];
@@ -35,11 +37,7 @@ const SHARED_HEADER_TEMPLATE = `
   </header>
 `;
 
-const SHARED_FOOTER_TEMPLATE = `
-  <footer class="site-footer">
-    <small>© ${COPYRIGHT_YEAR} Lochner Technology · Minneapolis, MN</small>
-  </footer>
-`;
+const SHARED_FOOTER_TEMPLATE = createSharedFooterTemplate(COPYRIGHT_YEAR);
 
 function main() {
   fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
@@ -52,6 +50,11 @@ function main() {
   for (const file of STATIC_FILES) {
     copyPath(path.join(ROOT_DIR, file), path.join(OUTPUT_DIR, file));
   }
+
+  fs.writeFileSync(
+    path.join(OUTPUT_DIR, MANIFEST_PATH),
+    serializeManifest(createIpfsVersionManifest(ROOT_DIR))
+  );
 
   for (const file of HTML_FILES) {
     const source = path.join(ROOT_DIR, file);
