@@ -6,18 +6,20 @@ const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
 const PUBLIC_IPFS_GATEWAYS = [
-  {
-    label: 'lochner.tech IPFS gateway',
-    siteUrl: 'http://54.186.247.15:8765/',
-    manifestUrl: 'http://54.186.247.15:8765/ipfs-version.json',
-  },
+  { label: 'lochner.tech IPFS gateway', siteUrl: 'http://54.186.247.15:8765/' },
 ];
 
 function createSharedFooterTemplate(copyrightYear) {
   const publicGatewayLinks = PUBLIC_IPFS_GATEWAYS
     .map((gateway) => `<a href="${gateway.siteUrl}" target="_blank" rel="noopener">${gateway.label}</a>`)
     .join(' ·\n        ');
-  const publicGatewayManifestEntries = JSON.stringify(PUBLIC_IPFS_GATEWAYS);
+  const publicGatewayManifestEntries = JSON.stringify(
+    PUBLIC_IPFS_GATEWAYS.map((gateway) => ({
+      label: gateway.label,
+      siteUrl: gateway.siteUrl,
+      manifestUrl: gateway.siteUrl + MANIFEST_PATH,
+    }))
+  );
 
   return `
   <footer class="site-footer site-footer-with-verification">
