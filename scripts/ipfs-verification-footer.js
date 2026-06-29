@@ -5,6 +5,8 @@ const DOMAIN_NAME = 'lochner.tech';
 const IPNS_ID = 'k2k4r8jw4dtnalpkgklrqeflhsgderg6a8wn5lix7bww1yjemm0rx7ye';
 const DWEB_IPNS_URL = `https://${IPNS_ID}.ipns.dweb.link/`;
 const PUBLIC_GATEWAY_CHECKER_URL = 'https://ipfs.github.io/public-gateway-checker/';
+const VERIFICATION_NOT_BEFORE_PATH = 'ipfs-verification-not-before.txt';
+
 const PUBLIC_IPFS_GATEWAYS = [
   { label: 'ipfs.io', siteUrl: `https://ipfs.io/ipns/${IPNS_ID}/` },
   { label: 'dweb.link', siteUrl: DWEB_IPNS_URL },
@@ -553,7 +555,9 @@ function createSharedFooterTemplate(copyrightYear) {
       (function () {
         const IPNS_ID = '${IPNS_ID}';
         const MANIFEST_PATH = '${MANIFEST_PATH}';
-        const CURRENT_MANIFEST_URL = resolveCurrentManifestUrl();
+        const VERIFICATION_NOT_BEFORE_PATH = '${VERIFICATION_NOT_BEFORE_PATH}';
+        const CURRENT_MANIFEST_URL = resolveCurrentPublishedUrl(MANIFEST_PATH);
+        const VERIFICATION_NOT_BEFORE_URL = resolveCurrentPublishedUrl(VERIFICATION_NOT_BEFORE_PATH);
         const GITHUB_RAW_MANIFEST_URL = '${GITHUB_RAW_MANIFEST_URL}';
         const GITHUB_MAIN_COMMIT_API_URL = '${GITHUB_MAIN_COMMIT_API_URL}';
         const IPFS_GATEWAYS = ${publicGatewayManifestEntries};
@@ -576,6 +580,9 @@ function createSharedFooterTemplate(copyrightYear) {
         const gatewayModalEl = document.getElementById('ipfs-footer-gateway-modal');
         const gatewayModalBodyEl = document.getElementById('ipfs-footer-gateway-modal-body');
         const gatewayModalCloseEl = document.getElementById('ipfs-footer-gateway-modal-close');
+        let verificationDelayTimerId = null;
+        let verificationCountdownTimerId = null;
+        let verificationNotBefore = '';
         let gatewayModalRows = IPFS_GATEWAYS.map((gateway) => ({
           label: gateway.label,
           siteUrl: gateway.siteUrl,
@@ -594,7 +601,7 @@ function createSharedFooterTemplate(copyrightYear) {
 
         setVerificationExpanded(false);
 
-        function resolveCurrentManifestUrl() {
+        function resolveCurrentPublishedUrl(resourcePath) {
           const path = window.location.pathname;
           const ipnsPrefix = '/ipns/' + IPNS_ID + '/';
           const ipfsPathParts = path.split('/');
@@ -603,14 +610,14 @@ function createSharedFooterTemplate(copyrightYear) {
             : null;
 
           if (path === ipnsPrefix.slice(0, -1) || path.startsWith(ipnsPrefix)) {
-            return window.location.origin + ipnsPrefix + MANIFEST_PATH;
+            return window.location.origin + ipnsPrefix + resourcePath;
           }
 
           if (ipfsPrefix) {
-            return window.location.origin + ipfsPrefix + MANIFEST_PATH;
+            return window.location.origin + ipfsPrefix + resourcePath;
           }
 
-          return window.location.origin + '/' + MANIFEST_PATH;
+          return window.location.origin + '/' + resourcePath;
         }
 
         function shortHash(hash) {
@@ -653,13 +660,40 @@ function createSharedFooterTemplate(copyrightYear) {
           };
         }
 
+        function getVerificationDelayRemainingMs() {
+          if (!verificationNotBefore) {
+            return 0;
+          }
+
+          const notBeforeTime = Date.parse(verificationNotBefore);
+          return Number.isNaN(notBeforeTime) ? 0 : Math.max(0, notBeforeTime - Date.now());
+        }
+
+        function formatCountdown(ms) {
+          const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+          const minutes = Math.floor(totalSeconds / 60);
+          const seconds = totalSeconds % 60;
+          return minutes + ':' + String(seconds).padStart(2, '0');
+        }
+
+        function clearVerificationDelayTimers() {
+          if (verificationDelayTimerId) {
+            window.clearTimeout(verificationDelayTimerId);
+            verificationDelayTimerId = null;
+          }
+          if (verificationCountdownTimerId) {
+            window.clearInterval(verificationCountdownTimerId);
+            verificationCountdownTimerId = null;
+          }
+        }
+
         function setStatus(state, message) {
           verificationEl.dataset.state = state;
           summaryStatusEl.dataset.state = state;
-          summaryStatusEl.textContent = state === 'verified' ? 'Verified' : state === 'loading' ? 'Checking' : 'Failed';
+          summaryStatusEl.textContent = state === 'verified' ? 'Verified' : state === 'loading' ? 'Checking' : state === 'pending' ? 'Waiting' : 'Failed';
           statusEl.dataset.state = state;
           statusMessageEl.textContent = message;
-          shieldMarkEl.textContent = state === 'verified' ? '✓' : state === 'loading' ? '' : '×';
+          shieldMarkEl.textContent = state === 'verified' ? '✓' : (state === 'loading' || state === 'pending') ? '' : '×';
           logVerificationStep('status: ' + state, message);
         }
 
@@ -676,6 +710,34 @@ function createSharedFooterTemplate(copyrightYear) {
             link.textContent = shortRevision(manifest.gitRevision) + dirtySuffix;
             link.title = manifest.gitRevision || '';
             gitRevisionEl.appendChild(link);
+          }
+        }
+
+        async function fetchVerificationNotBefore() {
+          logVerificationStep('fetch start: verification delay timestamp', { url: VERIFICATION_NOT_BEFORE_URL });
+
+          try {
+            const response = await fetch(VERIFICATION_NOT_BEFORE_URL + '?verify=' + Date.now(), { cache: 'no-store' });
+            if (response.status === 404) {
+              logVerificationStep('verification delay timestamp not found; checking immediately');
+              return '';
+            }
+            if (!response.ok) {
+              throw new Error(response.status + ' ' + response.statusText);
+            }
+
+            const timestamp = (await response.text()).trim();
+            if (!timestamp || Number.isNaN(Date.parse(timestamp))) {
+              logVerificationStep('verification delay timestamp invalid; checking immediately', { timestamp });
+              return '';
+            }
+
+            const normalizedTimestamp = new Date(timestamp).toISOString();
+            logVerificationStep('verification delay timestamp loaded', normalizedTimestamp);
+            return normalizedTimestamp;
+          } catch (error) {
+            logVerificationStep('verification delay timestamp unavailable; checking immediately', { error: error.message });
+            return '';
           }
         }
 
@@ -817,10 +879,35 @@ function createSharedFooterTemplate(copyrightYear) {
           return summarizedCommit;
         }
 
+        async function scheduleVerificationAfterDelay() {
+          verificationNotBefore = await fetchVerificationNotBefore();
+          const remainingMs = getVerificationDelayRemainingMs();
+          if (remainingMs <= 0) {
+            clearVerificationDelayTimers();
+            runVerification();
+            return;
+          }
+
+          const updatePendingStatus = () => {
+            const currentRemainingMs = getVerificationDelayRemainingMs();
+            setStatus('pending', 'Waiting ' + formatCountdown(currentRemainingMs) + ' before checking public IPFS gateways for this new update.');
+            recheckButton.disabled = true;
+          };
+
+          clearVerificationDelayTimers();
+          updatePendingStatus();
+          verificationCountdownTimerId = window.setInterval(updatePendingStatus, 1000);
+          verificationDelayTimerId = window.setTimeout(() => {
+            clearVerificationDelayTimers();
+            runVerification();
+          }, remainingMs);
+        }
+
         async function runVerification() {
           console.group('[IPFS verification] run');
           logVerificationStep('configuration', {
             currentManifestUrl: CURRENT_MANIFEST_URL,
+            verificationNotBeforeUrl: VERIFICATION_NOT_BEFORE_URL,
             githubRawManifestUrl: GITHUB_RAW_MANIFEST_URL,
             githubMainCommitApiUrl: GITHUB_MAIN_COMMIT_API_URL,
             publicGatewayManifestUrls: IPFS_GATEWAYS.map((gateway) => gateway.manifestUrl)
@@ -999,8 +1086,14 @@ function createSharedFooterTemplate(copyrightYear) {
             closeGatewayModal();
           }
         });
-        recheckButton.addEventListener('click', runVerification);
-        runVerification();
+        recheckButton.addEventListener('click', () => {
+          if (getVerificationDelayRemainingMs() > 0) {
+            void scheduleVerificationAfterDelay();
+            return;
+          }
+          runVerification();
+        });
+        void scheduleVerificationAfterDelay();
       }());
     </script>
   </footer>
