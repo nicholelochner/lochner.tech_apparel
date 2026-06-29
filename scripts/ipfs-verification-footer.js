@@ -278,6 +278,10 @@ function createSharedFooterTemplate(copyrightYear) {
         min-width: 0;
       }
 
+      .ipfs-footer-verification-detail-wide {
+        grid-column: 1 / -1;
+      }
+
       .ipfs-footer-verification-detail-with-info {
         position: relative;
         padding-right: 2.15rem;
@@ -512,9 +516,13 @@ function createSharedFooterTemplate(copyrightYear) {
           <strong>GitHub raw hash</strong>
           <span id="ipfs-footer-github-hash">pending</span>
         </div>
+        <div id="ipfs-footer-files-detail" class="ipfs-footer-verification-detail ipfs-footer-verification-detail-wide">
+          <strong>All files verified</strong>
+          <span id="ipfs-footer-files-status">pending</span>
+        </div>
       </div>
       <p class="ipfs-footer-explainer">
-        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions and content hashes.
+        <strong>How this verifies:</strong> The JavaScript fetches this site's manifest, a public IPFS/IPNS gateway manifest, and the GitHub raw manifest, then compares their Git revisions, aggregate content hashes, and every files[] path, byte count, and SHA-256 hash.
       </p>
       <noscript>
         <p class="ipfs-footer-explainer"><strong>JavaScript is required</strong> to run the automatic verification. Without JavaScript, these controls can only open the evidence files.</p>
@@ -575,8 +583,10 @@ function createSharedFooterTemplate(copyrightYear) {
         const originHashEl = document.getElementById('ipfs-footer-origin-hash');
         const gatewayHashEl = document.getElementById('ipfs-footer-gateway-hash');
         const githubHashEl = document.getElementById('ipfs-footer-github-hash');
+        const filesStatusEl = document.getElementById('ipfs-footer-files-status');
         const gatewayDetailEl = document.getElementById('ipfs-footer-gateway-detail');
         const githubDetailEl = document.getElementById('ipfs-footer-github-detail');
+        const filesDetailEl = document.getElementById('ipfs-footer-files-detail');
         const recheckButton = document.getElementById('ipfs-footer-recheck-button');
         const manifestLinkEl = document.getElementById('ipfs-footer-manifest-link');
         const gatewayModalEl = document.getElementById('ipfs-footer-gateway-modal');
@@ -1057,6 +1067,7 @@ function createSharedFooterTemplate(copyrightYear) {
           originHashEl.textContent = 'checking…';
           gatewayHashEl.textContent = 'checking…';
           githubHashEl.textContent = 'checking…';
+          filesStatusEl.textContent = 'checking files[] entries…';
           gatewayModalRows = IPFS_GATEWAYS.map((gateway) => ({
             label: gateway.label,
             siteUrl: gateway.siteUrl,
@@ -1069,6 +1080,7 @@ function createSharedFooterTemplate(copyrightYear) {
           renderGatewayModalRows(gatewayModalRows);
           setDetailState(gatewayDetailEl, null);
           setDetailState(githubDetailEl, null);
+          setDetailState(filesDetailEl, null);
           recheckButton.disabled = true;
 
           try {
@@ -1158,6 +1170,15 @@ function createSharedFooterTemplate(copyrightYear) {
             const sameContent = githubAggregateContentMatchesOrigin && hasMatchingGatewayManifest;
             const sameRevision = githubRevisionMatchesOrigin && hasMatchingGatewayManifest;
             const sameFiles = githubFileComparison.matches && hasMatchingGatewayManifest;
+            const verifiedFileCount = Array.isArray(originManifest.files) ? originManifest.files.length : 0;
+            const matchingGatewayLabels = matchingGatewayResults.map((result) => result.label).filter(Boolean);
+            filesStatusEl.textContent = sameFiles
+              ? verifiedFileCount + ' files match GitHub raw and ' + formatRevisionList(matchingGatewayLabels)
+              : 'Mismatch or unavailable across GitHub raw/public gateways';
+            filesStatusEl.title = sameFiles
+              ? 'Every files[] path, byte count, and SHA-256 hash in this site manifest matches GitHub raw and at least one public gateway manifest.'
+              : 'The files[] entries did not match across this site, GitHub raw, and a public gateway manifest.';
+            setDetailState(filesDetailEl, sameFiles ? 'passed' : null);
             const githubMainAcceptableRevisions = [githubMainCommit.sha].concat(githubMainCommit.parentShas);
             const manifestRevisionIsCurrentGithubPublication =
               githubMainAcceptableRevisions.includes(githubManifest.gitRevision) &&
@@ -1219,6 +1240,9 @@ function createSharedFooterTemplate(copyrightYear) {
               setStatus('verified', 'Verified: current site, at least one public IPFS gateway, GitHub raw manifest, current GitHub publication revision, and every files[] path, byte count, and SHA-256 hash match.');
             }
           } catch (error) {
+            filesStatusEl.textContent = 'Unable to verify files';
+            filesStatusEl.title = error.message;
+            setDetailState(filesDetailEl, null);
             logVerificationStep('verification threw', { error: error.message });
             setStatus('error', 'Unable to verify publication: ' + error.message);
           } finally {
